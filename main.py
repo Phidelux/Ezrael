@@ -1,7 +1,7 @@
 from core.ezrael import Ezrael
 import sys, getopt
 import threading
-import datetime
+import time
 
 def usage():
     print( 'Usage: python ezrael.py [-h]\n\n' \
