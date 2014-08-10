@@ -113,12 +113,19 @@ class Ezrael:
                 ircUserMessage = self.data2message(str(recv))
                 print ( "Notice! " + ircUserNick + "->" + ircUserMessage + "\r\n" )
 
-            if str(recv).find ( "PRIVMSG" ) != -1:
+            if str(recv).find ( "PRIVMSG " +self.ircNick ) != -1:
+                ircUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
+                ircUserHost = str(recv).split ( '@' ) [ 1 ] . split ( ' ' ) [ 0 ]
+                ircUserMessage = self.data2message(str(recv))
+                print ( "Query"  + "@" + ircUserNick + ": " + ircUserMessage)
+                self.privCommand(ircUserNick, ircUserMessage )
+                    
+            elif str(recv).find ( "PRIVMSG" ) != -1:
                 ircUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
                 ircUserHost = str(recv).split ( '@' ) [ 1 ] . split ( ' ' ) [ 0 ]
                 ircUserMessage = self.data2message(str(recv))
                 print ( (str(recv)).split()[2]  + "@" + ircUserNick + ": " + ircUserMessage)
-
+                
                 # "!" Indicated a command
                 if ( str(ircUserMessage[0]) == "!" ):
                     self.command = str(ircUserMessage[1:])
@@ -142,6 +149,18 @@ class Ezrael:
                 
         if self.shouldReconnect:
             self.connect()
+            
+    def privCommand(self, user, data):
+        command = (data).lower()
+        command = command.split()
+        print(command)
+        if (command[0] == "join"):
+            print ("er will joinen")
+            self.joinChannel(command[1])
+
+            str_buff = ("NOTICE "+user+" :Joine Channel "+command[1]+"\r\n")
+            self.ircSock.send (str_buff.encode())               
+
 
     def processMessage(self, data, nickname, channel):
         if (nickname == "Ganktimebaby" and data == "hallo"):
