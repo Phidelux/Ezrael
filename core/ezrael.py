@@ -36,28 +36,28 @@ class Ezrael:
         except:
             print ("Error: Could not connect to IRC; Host: " + str(self.ircHost) + "Port: " + str(self.ircPort))
             exit(1) # TODO: We should make it reconnect if it gets an error here
-        print ("Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
+        print ("******* Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
 
         buffer = ("NICK %s \r\n" % self.ircNick)
         self.ircSock.send (buffer.encode())
-        print ("Setting bot nick to " + str(self.ircNick) )
+        print ("******* Setting bot nick to " + str(self.ircNick) )
 
         buffer = ("USER %s 8 * :X\r\n" % self.ircNick)
         self.ircSock.send (buffer.encode())
-        print ("Setting User")
+        print ("******* Setting User")
         # Insert Alternate nick code here.
 
         buffer = ("PRIVMSG nickserv :identify %s %s\r\n" % (self.ircNick, self.ircPassword))
         self.ircSock.send (buffer.encode())
-        print ("Nickserv Identify")
+        print ("******* Nickserv Identify")
 
         buffer = ( "JOIN %s \r\n"  % self.ircChannel)
         self.ircSock.send (buffer.encode())
-        print ("Joining channel " + str(self.ircChannel) )
+        print ("******* Joining channel " + str(self.ircChannel) )
 
         buffer = ("PRIVMSG chanserv :op %s \r\n" % self.ircChannel)
         self.ircSock.send (buffer.encode())
-        print ("try to op me")
+        print ("******* try to op me")
 
         self.isConnected = True
         self.listen()
@@ -73,8 +73,10 @@ class Ezrael:
             # TODO: Welcome message works.
             if str(recv).find ( "JOIN " + self.ircChannel ) != -1:
                 irc_user_nick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
-                str_buff = ("NOTICE %s :Willkommen im " + self.ircChannel + " Channel. \r\n") % irc_user_nick
-                self.ircSock.send (str_buff.encode())
+                # if the bot joins a channel do nothing
+                if ( irc_user_nick != self.ircNick ):
+                    str_buff = ("NOTICE %s :Willkommen im " + self.ircChannel + " Channel. \r\n") % irc_user_nick
+                    self.ircSock.send (str_buff.encode())
 
             if str(recv).find ( "NOTICE" ) != -1:
                 ircUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
@@ -94,6 +96,20 @@ class Ezrael:
                     self.processCommand(ircUserNick, ( (str(recv)).split()[2] ) )
                 else:
                     self.processMessage(ircUserMessage, ircUserNick, ( (str(recv)).split()[2] ) )
+                    
+            #KickProtection for Ezrael when anybody kicks him he rejoins deop's and kick's the user
+            if str(recv).find ( "KICK "+self.ircChannel+" Ezrael" ) != -1:
+                ircKickUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
+                print ('******* !!! - Ich wurde von '+ircKickUserNick+' aus '+self.ircChannel+' gekickt\r\n')
+                self.joinChannel(self.ircChannel)
+                print ('******* Rejoining ...'+self.ircChannel)
+                time.sleep(1)
+                str_buff = ("MODE %s -o "+ircKickUserNick+" \r\n") % (self.ircChannel)
+                self.ircSock.send (str_buff.encode())
+                str_buff = ("KICK %s "+ircKickUserNick+" :Kick dich selbst du ei\r\n") % (self.ircChannel)
+                self.ircSock.send (str_buff.encode())                
+            
+                
         if self.shouldReconnect:
             self.connect()
 
@@ -133,7 +149,7 @@ class Ezrael:
             self.ircSock.send (str_buff.encode())
             buffer = ("PRIVMSG chanserv :op %s \r\n") % (channel)
             self.ircSock.send (buffer.encode())
-            print ("try to op me on %s" % channel)
+            print ("******* Try to OP me with Chanserv on %s" % channel)
             
             # This needs to test if the channel is full
             # This needs to modify the list of active channels
