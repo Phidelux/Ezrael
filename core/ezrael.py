@@ -64,7 +64,7 @@ class Ezrael:
 
     def listen(self):
         while self.isConnected:
-            recv = self.ircSock.recv( 500 )
+            recv = self.ircSock.recv( 4096 )
 
             print (recv)
             if str(recv).find ( "PING" ) != -1:
