@@ -38,6 +38,8 @@ class Ezrael:
             exit(1) # TODO: We should make it reconnect if it gets an error here
         print ("******* Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
 
+
+        
         buffer = ("NICK %s \r\n" % self.ircNick)
         self.ircSock.send (buffer.encode())
         print ("******* Setting bot nick to " + str(self.ircNick) )
@@ -45,7 +47,6 @@ class Ezrael:
         buffer = ("USER %s 8 * :X\r\n" % self.ircNick)
         self.ircSock.send (buffer.encode())
         print ("******* Setting User")
-        # Insert Alternate nick code here.
 
         buffer = ("PRIVMSG nickserv :identify %s %s\r\n" % (self.ircNick, self.ircPassword))
         self.ircSock.send (buffer.encode())
@@ -64,8 +65,8 @@ class Ezrael:
 
     def listen(self):
         while self.isConnected:
-            recv = self.ircSock.recv( 4096 )
-
+            recv = self.ircSock.recv( 1024 )
+            
             print (recv)
             if str(recv).find ( "PING" ) != -1:
                 self.ircSock.send ( "PONG ".encode() + recv.split() [ 1 ] + "\r\n".encode() )
