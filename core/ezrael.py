@@ -85,7 +85,7 @@ class Ezrael:
                 ircUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
                 ircUserHost = str(recv).split ( '@' ) [ 1 ] . split ( ' ' ) [ 0 ]
                 ircUserMessage = self.data2message(str(recv))
-                print ( self.ircChannel + "@" + ircUserNick + ": " + ircUserMessage)
+                print ( (str(recv)).split()[2]  + "@" + ircUserNick + ": " + ircUserMessage)
 
                 # "!" Indicated a command
                 if ( str(ircUserMessage[0]) == "!" ):
@@ -133,7 +133,7 @@ class Ezrael:
             self.ircSock.send (str_buff.encode())
             buffer = ("PRIVMSG chanserv :op %s \r\n") % (channel)
             self.ircSock.send (buffer.encode())
-            print ("try to op me on %s" % self.ircChannel)
+            print ("try to op me on %s" % channel)
             
             # This needs to test if the channel is full
             # This needs to modify the list of active channels
