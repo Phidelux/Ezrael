@@ -70,10 +70,10 @@ class Ezrael:
             if str(recv).find ( "PING" ) != -1:
                 self.ircSock.send ( "PONG ".encode() + recv.split() [ 1 ] + "\r\n".encode() )
 
-            # TODO: Welcome message does not work yet.
+            # TODO: Welcome message works.
             if str(recv).find ( "JOIN " + self.ircChannel ) != -1:
-                ircUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
-                str_buff = ("NOTICE " + ircUserNick + " Welcome in " + self.ircChannel + " Channel. \r\n")
+                irc_user_nick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
+                str_buff = ("NOTICE %s :Willkommen im " + self.ircChannel + " Channel. \r\n") % irc_user_nick
                 self.ircSock.send (str_buff.encode())
 
             if str(recv).find ( "NOTICE" ) != -1:
@@ -82,10 +82,10 @@ class Ezrael:
                 print ( "Notice! " + ircUserNick + "->" + ircUserMessage + "\r\n" )
 
             if str(recv).find ( "PRIVMSG" ) != -1:
-                ircUserMessageserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
+                ircUserNick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
                 ircUserHost = str(recv).split ( '@' ) [ 1 ] . split ( ' ' ) [ 0 ]
                 ircUserMessage = self.data2message(str(recv))
-                print ( ircUserNick + ": " + ircUserMessage)
+                print ( self.ircChannel + "@" + ircUserNick + ": " + ircUserMessage)
 
                 # "!" Indicated a command
                 if ( str(ircUserMessage[0]) == "!" ):
@@ -109,7 +109,12 @@ class Ezrael:
             self.sendMessage2Channel( ("fu dich selber du bengel"), channel )
         elif (data == "slaps Ezrael"):
             self.sendMessage2Channel( ("slap dich selber du schuettelwurm!"), channel )
-
+        elif (data == "duck"):
+            self.sendMessage2Channel( ('__("<'), channel )
+            self.sendMessage2Channel( ('\__/'), channel )
+            self.sendMessage2Channel( (' ^^'), channel )
+            self.sendMessage2Channel( ("DUCKTALES DADADAAAAAA"), channel )
+            
     def data2message(self,data):
         data = data[data.find(':')+1:len(data)]
         data = data[data.find(':')+1:len(data)]
@@ -126,6 +131,10 @@ class Ezrael:
         if (channel[0] == "#"):
             str_buff = ( "JOIN %s \r\n" ) % (channel)
             self.ircSock.send (str_buff.encode())
+            buffer = ("PRIVMSG chanserv :op %s \r\n") % (channel)
+            self.ircSock.send (buffer.encode())
+            print ("try to op me on %s" % self.ircChannel)
+            
             # This needs to test if the channel is full
             # This needs to modify the list of active channels
 
@@ -170,7 +179,7 @@ class Ezrael:
         command = command.split()
 
         # All admin only commands go in here.
-        if (user == rootUser):
+        if (user == "Ganktimebaby"):
             if ( len(command) == 1):
 
                 #This command shuts the bot down.
@@ -182,7 +191,7 @@ class Ezrael:
                     self.shouldReconnect = False
 
                 elif (command[0] == "op"):
-                    str_buff = ("MODE #seekampf +o Ganktimebaby \r\n")
+                    str_buff = ("MODE %s +o Ganktimebaby \r\n") % (channel)
                     self.ircSock.send (str_buff.encode())
                     self.sendMessage2Channel( ("4Es will op von mir"), channel )
 
@@ -219,8 +228,10 @@ class Ezrael:
                 self.sendMessage2Channel( ("Choo Choo! It's the MysteryTrain!"), channel )
             if (command[0] == "poo"):
                 self.sendMessage2Channel( ("Don't be a potty mouth"), channel )
-            if (command[0] == "readnext"):
-                self.sendMessage2Channel( ("Visit whatshouldIreadnext.com"), channel )
+            if (command[0] == "true"):
+                self.sendMessage2Channel( ("0 ist false, alles andere true"), channel )
+            if (command[0] == "false"):
+                self.sendMessage2Channel( ("0 ist false, alles andere true"), channel )                
         else:
             if (command[0] == "bop"):
                 self.sendMessage2Channel( ("\x01ACTION bopz " + str(command[1]) + "\x01"), channel )
