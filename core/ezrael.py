@@ -1,14 +1,44 @@
 #!/usr/bin/env python
-# This code was written for Python 3.4
-# version 0.101
-
-# Changelog:
-# version 0.1
-#
-# version 0.1
-# Restructured the complete base code
+# -*- coding: utf-8 -*-
 
 import socket, sys, threading, time, getopt, dns.resolver
+
+class color():
+    red = '\033[0;31m'
+    b_red = '\033[1;31m'
+    green = '\033[0;32m'
+    b_green = '\033[1;32m'
+    blue = '\033[0;34m'
+    b_blue = '\033[1;34m'
+    purple = '\033[0;35m'
+    b_purple = '\033[1;35m'
+    cyan = '\033[0;36m'
+    b_cyan = '\033[1;36m'
+    clear = '\033[0m'
+    bold = '\033[1m'
+    irc_boldwhite = '\x03' + '00'
+    irc_black = '\x03' + '01'
+    irc_blue = '\x03' + '02'
+    irc_green = '\x03' + '03'
+    irc_boldred = '\x03' + '04'
+    irc_red = '\x03' + '05'
+    irc_violet = '\x03' + '06'
+    irc_yellow = '\x03' + '07'
+    irc_boldyellow = '\x03' + '08'
+    irc_boldgreen = '\x03' + '09'
+    irc_cyan = '\x03' + '10'
+    irc_boldcyan = '\x03' + '11'
+    irc_boldblue = '\x03' + '12'
+    irc_boldviolet = '\x03' + '13'
+    irc_boldblack = '\x03' + '14'
+    irc_white = '\x03' + '15'
+    irc_bold = '\x02'
+    irc_italic = '\x09'
+    irc_underline = '\x15'
+    irc_clear = '\x0f'
+# Underline2 = 0x1f
+# Reverse = 0x16
+# StrikeThrough = 0x13
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
 class Ezrael:
@@ -25,7 +55,7 @@ class Ezrael:
         self.isConnected = False
         self.shouldReconnect = False
         self.command = ""
-
+    
     # This is the bit that controls connection to a server & channel.
     # It should be rewritten to allow multiple channels in a single server.
     # This needs to have an "auto identify" as part of its script, or support a custom connect message.
@@ -65,12 +95,11 @@ class Ezrael:
 
     def listen(self):
         while self.isConnected:
-            recv = self.ircSock.recv( 1024 )
+            recv = self.ircSock.recv( 1024 ) 
             
             print (recv)
             if str(recv).find ( "PING" ) != -1:
                 self.ircSock.send ( "PONG ".encode() + recv.split() [ 1 ] + "\r\n".encode() )
-
             # TODO: Welcome message works.
             if str(recv).find ( "JOIN " + self.ircChannel ) != -1:
                 irc_user_nick = str(recv).split ( '!' ) [ 0 ] . split ( ":")[1]
@@ -131,7 +160,6 @@ class Ezrael:
             self.sendMessage2Channel( ('\__/'), channel )
             self.sendMessage2Channel( (' ^^'), channel )
             self.sendMessage2Channel( ("DUCKTALES DADADAAAAAA"), channel )
-            
     def data2message(self,data):
         data = data[data.find(':')+1:len(data)]
         data = data[data.find(':')+1:len(data)]
@@ -162,7 +190,7 @@ class Ezrael:
             self.ircSock.send (str_buff.encode())
             # This needs to modify the list of active channels
         ### Wiki
-
+            
     def wiki(self, query):
         query = '_'.join(query).strip().replace(" \t\r\n", "_")
         host = query + '.wp.dg.cx'
@@ -237,8 +265,9 @@ class Ezrael:
         # All public commands go here
         # The first set of commands are ones that don't take parameters
         if ( len(command) == 1):
-
-
+            
+            if (command[0] == "test"):
+                self.sendMessage2Channel( ('\033[0;31mtest'), channel )
             if (command[0] == "moo"):
                 self.sendMessage2Channel( ("MOO yourself, " + user), channel )
             if (command[0] == "train"):
