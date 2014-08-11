@@ -2,7 +2,7 @@ from core.plugin import Plugin
 import dns.resolver
 
 class Wiki(Plugin):
-    def onPrivMsg(self, irc, channel, nick, msg):
+    def onMsg(self, irc, channel, nick, msg):
         # Make sure an actual command was sent.
         if str(msg[0]) != '!' or len(msg.split()) == 0:
             return
@@ -14,11 +14,20 @@ class Wiki(Plugin):
         command = command.split()
 
         if command[0] == 'wiki':
-            # Fetch an answer from wikipedia ...
+            # Fetch an answer from wikipedia, ...
             wiki = self.wiki(command[1:]) \
                 .replace('\r', '') \
                 .replace('\n', ' ') \
                 .replace('\t', ' ')
+
+            # ... replace special characters ...
+            special = {
+                '&nbsp;': ' ', '&amp;': '&', '&quot;': '"',
+                '&lt;': '<', '&gt;': '>'
+            }
+
+            for (k,v) in special.items():
+                fortune = fortune.replace(k, v)
 
             # ... and send it as message to the irc channel.
             irc.sendMessage2Channel('[Wikipedia] ' + wiki, channel)

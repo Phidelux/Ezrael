@@ -11,6 +11,9 @@ class Plugin(object):
     def onRecv(self, irc, msg):
         pass
 
+    def onMsg(self, irc, channel, nick, msg):
+        pass
+
     def onPrivMsg(self, irc, channel, nick, msg):
         pass
 

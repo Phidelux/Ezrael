@@ -104,6 +104,11 @@ class Ezrael(object):
                     ircUserNick = self.extractUser(recv)
                     self.notifyPlugins('onPrivMsg', self.ircChannel, ircUserNick, ircUserMessage)
 
+                # Notify the plugins if we received a message.
+                elif str(recv).find("PRIVMSG") != -1:
+                    ircUserNick = self.extractUser(recv)
+                    self.notifyPlugins('onMsg', self.ircChannel, ircUserNick, ircUserMessage)
+
             if str(recv).find ( "PING" ) != -1:
                 self.ircSock.send ( "PONG ".encode() + recv.split() [ 1 ] + "\r\n".encode() )
             # TODO: Welcome message works.
