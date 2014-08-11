@@ -16,12 +16,6 @@ def main(argv):
         usage()
         sys.exit(2)
 
-    server = 'chat.freenode.net';
-    port = 6667;
-    channel = '#seekampf';
-    nick = 'Ezrael';
-    password = 'ficken'
-
     for o, a in opts:
         if o in ("-h", "--help"):
             usage()
@@ -30,7 +24,7 @@ def main(argv):
             assert False, "unhandled option"
 
     # Initialize the irc bot, ...
-    ezrael = Ezrael(server, port, channel, nick, password)
+    ezrael = Ezrael()
 
     # ... bind the connect method of ezrael to a thread ...
     runEzrael = threading.Thread(None, ezrael.connect)
