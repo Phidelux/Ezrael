@@ -1,5 +1,5 @@
 from core.plugin import Plugin
-import urllib.request
+import urllib
 
 class Fortune(Plugin):
     def onMsg(self, irc, channel, nick, msg):
