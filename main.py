@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from core.ezrael import Ezrael
 import sys, getopt
 import threading

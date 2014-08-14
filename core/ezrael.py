@@ -4,6 +4,7 @@
 from core.colors import Color
 import socket, time
 import configparser
+import os
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
 class Ezrael(object):
@@ -11,9 +12,16 @@ class Ezrael(object):
     # channel should be rewritten to be a list, which then loops to connect, per channel.
     # This needs to support an alternate nick.
     def __init__(self):
+	# Fetch the current working directory ...
+	basepath = os.path.dirname(os.path.realpath(__file__))
+	basepath = basepath[:basepath.rfind('/')]
+
+	# ... and generate the path to the config file.
+	configFile = os.path.join(basepath, 'ezrael.ini')
+
         # Load connection data from main config ...
         self.config = configparser.ConfigParser()
-        self.config.read('ezrael.ini')
+        self.config.read(configFile)
 
         # ... and assign them to locals.
         self.ircHost = self.config['main']['host']
@@ -93,8 +101,11 @@ class Ezrael(object):
     def listen(self):
         while self.isConnected:
             recv = self.ircSock.recv(1024)
+            print('Received: ' + str(recv))
+
 
             if recv != "":
+		print('Received: ' + str(recv))
                 # Notify the plugins that we received something.
                 ircUserMessage = self.extractMessage(recv)
                 self.notifyPlugins('onRecv', ircUserMessage)

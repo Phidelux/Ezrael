@@ -27,7 +27,7 @@ class Wiki(Plugin):
             }
 
             for (k,v) in special.items():
-                fortune = fortune.replace(k, v)
+                wiki = wiki.replace(k, v)
 
             # ... and send it as message to the irc channel.
             irc.sendMessage2Channel('[Wikipedia] ' + wiki, channel)
