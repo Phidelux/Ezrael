@@ -4,33 +4,26 @@ import DNS
 class Wiki(Plugin):
     def onMsg(self, irc, channel, nick, msg):
         # Make sure an actual command was sent.
-        if str(msg[0]) != '!' or len(msg.split()) == 0:
+        if str(msg[0]) != '!' or str(msg[1:5]).lower() != 'wiki':
             return
 
-        # Make the command case insensitive.
-        command = str(msg[1:]).lower()
+        # Fetch an answer from wikipedia, ...
+        wiki = self.wiki(command[1:]) \
+            .replace('\r', '') \
+            .replace('\n', ' ') \
+            .replace('\t', ' ')
 
-        # Break the command into pieces.
-        command = command.split()
+        # ... replace special characters ...
+        special = {
+            '&nbsp;': ' ', '&amp;': '&', '&quot;': '"',
+            '&lt;': '<', '&gt;': '>'
+        }
 
-        if command[0] == 'wiki':
-            # Fetch an answer from wikipedia, ...
-            wiki = self.wiki(command[1:]) \
-                .replace('\r', '') \
-                .replace('\n', ' ') \
-                .replace('\t', ' ')
+        for (k,v) in special.items():
+            wiki = wiki.replace(k, v)
 
-            # ... replace special characters ...
-            special = {
-                '&nbsp;': ' ', '&amp;': '&', '&quot;': '"',
-                '&lt;': '<', '&gt;': '>'
-            }
-
-            for (k,v) in special.items():
-                wiki = wiki.replace(k, v)
-
-            # ... and send it as message to the irc channel.
-            irc.sendMessage2Channel('[Wikipedia] ' + wiki, channel)
+        # ... and send it as message to the irc channel.
+        irc.sendMessage2Channel('[Wikipedia] ' + wiki, channel)
 
     def wiki(self, query):
         query = '_'.join(query).strip().replace(' \t\r\n', '_')
