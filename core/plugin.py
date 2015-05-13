@@ -5,6 +5,12 @@ class Plugin(object):
     def init(self, irc):
         pass
 
+    def onPing(self, irc, msg):
+        pass
+
+    def onKick(self, irc, channel, nick, msg):
+        pass
+
     def onJoin(self, irc, channel, nick, msg):
         pass
 
