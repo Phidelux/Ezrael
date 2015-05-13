@@ -57,27 +57,23 @@ class Ezrael(object):
       except:
          print("Error: Could not connect to Host " + str(self.ircHost) + ":" + str(self.ircPort))
          exit(1) # TODO: We should make it reconnect if it gets an error here
-      print("******* Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
+      print("NOTICE: Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
 
-      buffer = ("NICK %s \r\n" % self.ircNick)
-      self.ircSock.send(buffer.encode())
-      print("******* Setting bot nick to " + str(self.ircNick))
+      self.ircSock.send("NICK {0} \r\n".format(self.ircNick).encode())
+      print("NOTICE: Setting bot nick to " + str(self.ircNick))
 
-      buffer = ("USER %s 8 * :X\r\n" % self.ircNick)
-      self.ircSock.send(buffer.encode())
-      print("******* Setting User")
+      self.ircSock.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
+      print("NOTICE: Setting User")
 
       # TODO: Reactivate for bot login.
       # buffer = ("PRIVMSG nickserv :identify %s %s\r\n" % (self.ircNick, self.ircPassword))
-      # self.ircSock.send(buffer.encode())
+      # self.ircSock.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
       # print("******* Nickserv Identify")
 
-      buffer = ("JOIN %s \r\n"  % self.ircChannel)
-      self.ircSock.send(buffer.encode())
+      self.ircSock.send("JOIN {0} \r\n".format(self.ircChannel).encode())
       print("******* Joining channel " + str(self.ircChannel))
 
-      buffer = ("PRIVMSG chanserv :op %s \r\n" % self.ircChannel)
-      self.ircSock.send (buffer.encode())
+      self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
       print("******* try to op me")
 
       self.isConnected = True
