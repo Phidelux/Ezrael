@@ -4,6 +4,7 @@
 from core.colors import Color
 import socket, time
 import configparser
+import random
 import os
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
@@ -29,6 +30,9 @@ class Ezrael(object):
       self.ircNick = self.config['main']['nick']
       self.ircPassword = self.config['main']['password']
       self.ircChannel = '#' + self.config['main']['channel']
+
+      # TODO: Remove usage of debugging nickname.
+      self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
 
       # Setup the socket used to communicate with the irc, ...
       self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -121,6 +125,11 @@ class Ezrael(object):
                ircUserNick = self.extractUser(recv)
                self.notifyPlugins('onMsg', self.ircChannel, ircUserNick, ircUserMessage)
 
+            # Notify the plugins if we were kicked from the channel.
+            elif str(recv).find("KICK " + self.ircChannel + " " + self.ircNick) != -1:
+               ircUserNick = self.extractUser(recv)
+               self.notifyPlugins('onKick', self.ircChannel, ircUserNick, ircUserMessage)
+
             if str(recv).find("PING") != -1:
                print("Sent: PONG ".encode() + recv.split()[1] + "\r\n".encode())
                self.ircSock.send("PONG ".encode() + recv.split()[1] + "\r\n".encode() )
@@ -153,23 +162,10 @@ class Ezrael(object):
 
                # "!" Indicated a command
                if ( str(ircUserMessage[0]) == "!" ):
-                  self.command = str(ircUserMessage[1:])
-                  # (str(recv)).split()[2] ) is simply the channel the command was heard on.
-                  self.processCommand(ircUserNick, ( (str(recv)).split()[2] ) )
+                  self.command = ircUserMessage
+                  self.processCommand(ircUserNick, ircUserMessage)
                else:
-                  self.processMessage(ircUserMessage, ircUserNick, ( (str(recv)).split()[2] ) )
-
-            #KickProtection for Ezrael when anybody kicks him he rejoins deop's and kick's the user
-            if str(recv).find ( "KICK "+self.ircChannel+" Ezrael" ) != -1:
-               ircKickUserNick = str(recv).split ( '!' )[0].split(":")[1]
-               print ('******* !!! - I was kicked by ' + ircKickUserNick + ' from ' + self.ircChannel + '\r\n')
-               self.joinChannel(self.ircChannel)
-               print ('******* Rejoining ...'+self.ircChannel)
-               time.sleep(1)
-               str_buff = ("MODE %s -o " + ircKickUserNick + " \r\n") % (self.ircChannel)
-               self.ircSock.send (str_buff.encode())
-               str_buff = ("KICK %s " + ircKickUserNick + " :Kick yourself!\r\n") % (self.ircChannel)
-               self.ircSock.send (str_buff.encode())
+                  self.processMessage(ircUserMessage, ircUserNick, self.extractMessage(recv) )
 
       if self.shouldReconnect:
          self.connect()
@@ -182,6 +178,19 @@ class Ezrael(object):
 
    def extractMessage(self, recv):
       return self.data2message(str(recv))
+
+   def data2message(self,data):
+      # Remove leading colon ...
+      data = data[data.find(':')+1:len(data)]
+
+      # ... and extract all data after the next one.
+      data = data[data.find(':')+1:len(data)]
+
+      # Remove strange data at end of line.
+      if data[len(data)-5:] == "\\r\\n'":
+         data = data[0:len(data)-5]
+
+      return data.strip()
 
    def privCommand(self, user, data):
       command = (data).lower()
@@ -197,31 +206,9 @@ class Ezrael(object):
    def processMessage(self, data, nickname, channel):
       # TODO: Implement Plugin based message handling.
       pass
-      # if (nickname == "Avedo" and data == "hallo"):
-      #    self.sendMessage2Channel( ("Hallo Gott"), channel )
-      # elif (data == "hallo"):
-      #    self.sendMessage2Channel( ("Hallo, " + nickname), channel )
-      # elif (data == "HaLl0" or data == "hall0" or data == "ha110"):
-      #    self.sendMessage2Channel( ("\x01ACTION slaps " + nickname + "around a bit with a large dick\x01"), channel )
-      # elif (data == "fu" or data == "FU"):
-      #    self.sendMessage2Channel( ("fu dich selber du bengel"), channel )
-      # elif (data == "slaps Ezrael"):
-      #    self.sendMessage2Channel( ("slap dich selber du schuettelwurm!"), channel )
-      # elif (data == "duck"):
-      #    self.sendMessage2Channel( ('__("<'), channel )
-      #    self.sendMessage2Channel( ('\__/'), channel )
-      #    self.sendMessage2Channel( (' ^^'), channel )
-      #    self.sendMessage2Channel( ("DUCKTALES DADADAAAAAA"), channel )
 
-   def data2message(self,data):
-      # Remove leading colon, ...
-      data = data[data.find(':')+1:len(data)]
-
-      # ... extract all data after the next one ...
-      data = data[data.find(':')+1:len(data)]
-
-      # ... and remove leading and trailing spaces.
-      return data.strip()
+   def sendPlain(self, data):
+      self.ircSock.send(data)
 
    # This function sends a message to a channel, which must start with a #.
    def sendMessage2Channel(self,data,channel):
@@ -254,60 +241,45 @@ class Ezrael(object):
       if ( len(self.command.split()) == 0):
          return
 
-      # So the command isn't case sensitive
-      command = (self.command).lower()
+      command = self.command[1:].split()[0].strip().lower()
+      data = self.command[1+len(command):].strip()
 
-      # Break the command into pieces, so we can interpret it with arguments
-      command = command.split()
+      print("User: " + user)
+      print("Command: " + command)
+      print("Data: " + data)
 
       # All admin only commands go in here.
       if (user == "Avedo"):
-         if ( len(command) == 1):
-            # This command shuts the bot down.
-            if (command[0] == "quit"):
-               str_buff = ( "QUIT %s \r\n" ) % (channel)
-               self.ircSock.send (str_buff.encode())
-               self.ircSock.close()
-               self.isConnected = False
-               self.shouldReconnect = False
+         # This command shuts the bot down.
+         if (command == "quit"):
+            str_buff = ( "QUIT %s \r\n" ) % (channel)
+            self.ircSock.send (str_buff.encode())
+            self.ircSock.close()
+            self.isConnected = False
+            self.shouldReconnect = False
 
-            elif (command[0] == "op"):
-               str_buff = ("MODE %s +o Avedo \r\n") % (channel)
-               self.ircSock.send (str_buff.encode())
-               self.sendMessage2Channel( ("4Es will op von mir"), channel )
+         elif (command == "op"):
+            str_buff = ("MODE %s +o Avedo \r\n") % (channel)
+            self.ircSock.send (str_buff.encode())
+            self.sendMessage2Channel( ("4Es will op von mir"), channel )
 
          # These commands take parameters
          else:
             # This command makes the bot join a channel
             # This needs to be rewritten in a better way, to catch multiple channels
-            if (command[0] == "join"):
-               if ( (command[1])[0] == "#"):
-                  irc_channel = command[1]
+            if (command == "join"):
+               if ( data[0] == "#"):
+                  irc_channel = data.split()[0]
                else:
-                  irc_channel = "#" + command[1]
+                  irc_channel = "#" + data.split()[0]
                self.joinChannel(irc_channel)
 
             # This command makes the bot part a channel
             # This needs to be rewritten in a better way, to catch multiple channels
             if (command[0] == "part"):
-               if ( (command[1])[0] == "#"):
-                  irc_channel = command[1]
+               if ( data[0] == "#"):
+                  irc_channel = data.split()[0]
                else:
-                  irc_channel = "#" + command[1]
-                  self.quitChannel(irc_channel)
+                  irc_channel = "#" + data.split()[0]
 
-      # All public commands go here
-      # The first set of commands are ones that don't take parameters
-      if ( len(command) == 1):
-         if (command[0] == "test"):
-            self.sendMessage2Channel( ('\033[0;31mtest'), channel )
-         if (command[0] == "moo"):
-            self.sendMessage2Channel( ("MOO yourself, " + user), channel )
-         if (command[0] == "train"):
-            self.sendMessage2Channel( ("Choo Choo! It's the MysteryTrain!"), channel )
-         if (command[0] == "poo"):
-            self.sendMessage2Channel( ("Don't be a potty mouth"), channel )
-         if (command[0] == "true"):
-            self.sendMessage2Channel( ("0 ist false, alles andere true"), channel )
-         if (command[0] == "false"):
-            self.sendMessage2Channel( ("0 ist false, alles andere true"), channel )
+               self.quitChannel(irc_channel)

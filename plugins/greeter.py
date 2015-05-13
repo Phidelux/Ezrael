@@ -10,8 +10,3 @@ class Greeter(Plugin):
          irc.sendMessage2Channel( ("Greetings Master"), channel )
       elif pattern.match(msg) != None:
          irc.sendMessage2Channel( ("Hello, " + nick), channel )
-      elif msg == "duck":
-         irc.sendMessage2Channel( '__("<', channel )
-         irc.sendMessage2Channel( '\__/', channel )
-         irc.sendMessage2Channel( ' ^^', channel )
-         irc.sendMessage2Channel( "DUCKTALES UhhhHuuuuuuu", channel )
