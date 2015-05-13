@@ -66,15 +66,14 @@ class Ezrael(object):
       print("NOTICE: Setting User")
 
       # TODO: Reactivate for bot login.
-      # buffer = ("PRIVMSG nickserv :identify %s %s\r\n" % (self.ircNick, self.ircPassword))
       # self.ircSock.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
       # print("******* Nickserv Identify")
 
       self.ircSock.send("JOIN {0} \r\n".format(self.ircChannel).encode())
-      print("******* Joining channel " + str(self.ircChannel))
+      print("NOTICE: Joining channel " + str(self.ircChannel))
 
       self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
-      print("******* try to op me")
+      print("NOTICE: Trying to optain operator status ...")
 
       self.isConnected = True
       self.listen()
@@ -85,7 +84,7 @@ class Ezrael(object):
 
          for module in plugins:
             plugin = __import__('plugins.' + module.lower(), globals(), locals(), [module])
-            print('Loaded plugin ' + module)
+            print('NOTICE: Loaded plugin ' + module)
             instance = getattr(plugin, module)(self.config)
             self.plugins.append(instance)
 
@@ -104,8 +103,7 @@ class Ezrael(object):
          recv = self.ircSock.recv(1024)
 
          if recv != "":
-            # TODO: Debugging output.
-            print('Received: ' + str(recv))
+            print(str(recv))
 
             # Notify the plugins that we received something.
             ircUserMessage = self.extractMessage(recv)
@@ -114,46 +112,20 @@ class Ezrael(object):
             # Notify the plugins if we received a private message.
             if str(recv).find("PRIVMSG " + self.ircNick) != -1:
                ircUserNick = self.extractUser(recv)
+               ircUserHost = self.extractHost(recv)
                self.notifyPlugins('onPrivMsg', self.ircChannel, ircUserNick, ircUserMessage)
+
+               # Handle queries.
+               print ( "Query "  + "@" + ircUserNick + ": " + ircUserMessage)
+               self.privCommand(ircUserNick, ircUserMessage )
 
             # Notify the plugins if we received a message.
             elif str(recv).find("PRIVMSG") != -1:
                ircUserNick = self.extractUser(recv)
+               ircUserHost = self.extractHost(recv)
                self.notifyPlugins('onMsg', self.ircChannel, ircUserNick, ircUserMessage)
 
-            # Notify the plugins if we were kicked from the channel.
-            elif str(recv).find("KICK " + self.ircChannel + " " + self.ircNick) != -1:
-               ircUserNick = self.extractUser(recv)
-               self.notifyPlugins('onKick', self.ircChannel, ircUserNick, ircUserMessage)
-
-            if str(recv).find("PING") != -1:
-               print("Sent: PONG ".encode() + recv.split()[1] + "\r\n".encode())
-               self.ircSock.send("PONG ".encode() + recv.split()[1] + "\r\n".encode() )
-
-            # TODO: Welcome message works.
-            if str(recv).find("JOIN " + self.ircChannel ) != -1:
-               ircUserNick = self.extractUser(recv)
-               # if the bot joins a channel do nothing
-               if(ircUserNick != self.ircNick):
-                  buffer = ("NOTICE %s :Willkommen im " + self.ircChannel + " Channel. \r\n") % ircUserNick
-                  self.ircSock.send(buffer.encode())
-
-            if str(recv).find("NOTICE") != -1:
-               ircUserNick = self.extractUser(recv)
-               ircUserMessage = self.extractMessage(recv)
-               print ( "Notice! " + ircUserNick + "->" + ircUserMessage + "\r\n" )
-
-            if str(recv).find ( "PRIVMSG " + self.ircNick ) != -1:
-               ircUserNick = self.extractUser(recv)
-               ircUserHost = self.extractHost(recv)
-               ircUserMessage = self.extractMessage(recv)
-               print ( "Query "  + "@" + ircUserNick + ": " + ircUserMessage)
-               self.privCommand(ircUserNick, ircUserMessage )
-
-            elif str(recv).find ( "PRIVMSG" ) != -1:
-               ircUserNick = self.extractUser(recv)
-               ircUserHost = self.extractHost(recv)
-               ircUserMessage = self.extractMessage(recv)
+               # Print normal messages.
                print ( (str(recv)).split()[2]  + "@" + ircUserNick + ": " + ircUserMessage)
 
                # "!" Indicated a command
@@ -162,6 +134,33 @@ class Ezrael(object):
                   self.processCommand(ircUserNick, ircUserMessage)
                else:
                   self.processMessage(ircUserMessage, ircUserNick, self.extractMessage(recv) )
+
+            # Notify the plugins if we were kicked from the channel.
+            elif str(recv).find("KICK " + self.ircChannel + " " + self.ircNick) != -1:
+               ircUserNick = self.extractUser(recv)
+               self.notifyPlugins('onKick', self.ircChannel, ircUserNick, ircUserMessage)
+
+            # Notify the plugins if someone joined the channel.
+            elif str(recv).find("JOIN " + self.ircChannel ) != -1:
+               ircUserNick = self.extractUser(recv)
+               self.notifyPlugins('onJoin', self.ircChannel, ircUserNick, ircUserMessage)
+
+               # Send a greet to users joining the channel.
+               if(ircUserNick != self.ircNick):
+                  self.ircSock.send("NOTICE {0} :Willkommen im Channel {1}. \r\n".format(ircUserNick, self.ircChannel).encode())
+
+            # Notify the plugins if someone pinged ezrael.
+            elif str(recv).find("PING") != -1:
+               self.notifyPlugins('onPing', ircUserMessage)
+
+               # Send a PONG on an incoming PING.
+               print("NOTICE: PONG {0}\r\n".format(recv.split()[1]).encode())
+               self.ircSock.send("PONG {0}\r\n".format(recv.split()[1]).encode() )
+
+            # Notify the plugins if someone writes a notice.
+            elif str(recv).find("NOTICE") != -1:
+               ircUserNick = self.extractUser(recv)
+               self.notifyPlugins('onNotice', self.ircChannel, ircUserNick, ircUserMessage)
 
       if self.shouldReconnect:
          self.connect()
