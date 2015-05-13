@@ -7,6 +7,6 @@ class Greeter(Plugin):
       pattern = re.compile('[hH][eE3aA4][lL1]{2}[oO0]|[mM][oO0][iI][nN]|[oO0][lL1]{1,2}[eE3aA4]')
 
       if nick == "Avedo" and pattern.match(msg) != None:
-         irc.sendMessage2Channel( ("Greetings Master"), channel )
+         irc.sendMessage2Channel("Greetings Master", channel)
       elif pattern.match(msg) != None:
-         irc.sendMessage2Channel( ("Hello, " + nick), channel )
+         irc.sendMessage2Channel("Hello, " + nick, channel)
