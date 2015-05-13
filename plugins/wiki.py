@@ -1,5 +1,5 @@
 from core.plugin import Plugin
-import dns.resolver
+import DNS
 
 class Wiki(Plugin):
     def onMsg(self, irc, channel, nick, msg):
@@ -37,15 +37,13 @@ class Wiki(Plugin):
         host = query + '.wp.dg.cx'
         result = ''
 
-        try:
-            answers = dns.resolver.query(host, 'TXT')
+        DNS.DiscoverNameServers()
+        request = DNS.Request(host, qtype=DNS.Type.TXT, protocol='tcp')
+        reply = request.req()
+        reply.show()
 
-            for txtRecord in answers.response.answer:
-                result = txtRecord.to_text().split('"')[1]
-        except dns.resolver.NXDOMAIN:
-            print('No such domain %s' % host)
-        except dns.resolver.Timeout:
-            print('Timed out while resolving %s' % host)
-        except dns.exception.DNSException:
-            print('Unhandled exception')
+        if reply.answers:
+            for answer in reply.answers:
+                print(answer['data'])
+
         return result

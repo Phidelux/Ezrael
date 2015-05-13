@@ -1,42 +1,35 @@
 from core.plugin import Plugin
-import urllib
+import urllib.request
 
 class Fortune(Plugin):
     def onMsg(self, irc, channel, nick, msg):
         # Make sure an actual command was sent.
-        if str(msg[0]) != '!' or len(msg.split()) == 0:
+        if str(msg[0]) != '!' or str(msg[1:8]).lower() != 'fortune':
             return
 
-        # Make the command case insensitive.
-        command = str(msg[1:]).lower()
+        # Setup the request url, ...
+        iheartquotes = 'http://www.iheartquotes.com/api/v1/random' \
+                       + '?show_permalink=false' \
+                       + '&max_characters=200' \
+                       + '&format=text'
 
-        # Break the command into pieces.
-        command = command.split()
+        # ... fetch a fortune from http://iheartquotes.com, ...
+        fortune = urllib.request.urlopen(iheartquotes).read()
 
-        if command[0] == 'fortune':
-            # Setup the request url, ...
-            iheartquotes = 'http://www.iheartquotes.com/api/v1/random' \
-                           + '?show_permalink=false' \
-                           + '&max_characters=200' \
-                           + '&format=text'
+        # ... remove linebreaks and tabs, ...
+        fortune = str(fortune, 'utf-8') \
+            .replace('\r', '') \
+            .replace('\n', ' ') \
+            .replace('\t', ' ')
 
-            # ... fetch a fortune from http://iheartquotes.com, ...
-            fortune = urllib.request.urlopen(iheartquotes).read()
+        # ... replace special characters ...
+        special = {
+            '&nbsp;': ' ', '&amp;': '&', '&quot;': '"',
+            '&lt;': '<', '&gt;': '>'
+        }
 
-            # ... remove linebreaks and tabs, ...
-            fortune = str(fortune, 'utf-8') \
-                .replace('\r', '') \
-                .replace('\n', ' ') \
-                .replace('\t', ' ')
+        for (k,v) in special.items():
+            fortune = fortune.replace(k, v)
 
-            # ... replace special characters ...
-            special = {
-                '&nbsp;': ' ', '&amp;': '&', '&quot;': '"',
-                '&lt;': '<', '&gt;': '>'
-            }
-
-            for (k,v) in special.items():
-                fortune = fortune.replace(k, v)
-
-            # ... and send it as message to the irc channel.
-            irc.sendMessage2Channel('[Fortune] ' + fortune, channel)
+        # ... and send it as message to the irc channel.
+        irc.sendMessage2Channel('[Fortune] ' + fortune, channel)

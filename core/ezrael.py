@@ -63,9 +63,10 @@ class Ezrael(object):
       self.ircSock.send(buffer.encode())
       print("******* Setting User")
 
-      buffer = ("PRIVMSG nickserv :identify %s %s\r\n" % (self.ircNick, self.ircPassword))
-      self.ircSock.send(buffer.encode())
-      print("******* Nickserv Identify")
+      # TODO: Reactivate for bot login.
+      # buffer = ("PRIVMSG nickserv :identify %s %s\r\n" % (self.ircNick, self.ircPassword))
+      # self.ircSock.send(buffer.encode())
+      # print("******* Nickserv Identify")
 
       buffer = ("JOIN %s \r\n"  % self.ircChannel)
       self.ircSock.send(buffer.encode())
@@ -213,10 +214,14 @@ class Ezrael(object):
       #    self.sendMessage2Channel( ("DUCKTALES DADADAAAAAA"), channel )
 
    def data2message(self,data):
+      # Remove leading colon, ...
       data = data[data.find(':')+1:len(data)]
+
+      # ... extract all data after the next one ...
       data = data[data.find(':')+1:len(data)]
-      data = str(data[0:len(data)-5])
-      return data
+
+      # ... and remove leading and trailing spaces.
+      return data.strip()
 
    # This function sends a message to a channel, which must start with a #.
    def sendMessage2Channel(self,data,channel):
