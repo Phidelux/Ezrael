@@ -22,7 +22,7 @@ class Greeter(Plugin):
 
   def onMsg(self, irc, channel, nick, msg):
     # Define the greetiungs pattern.
-    pattern = re.compile('[hH]([eE3aA4]([yY]|[lL1]{2}[oO0])|[iI])|[mM][oO0][iI][nN]|[oO0][lL1]{1,2}[eE3aA4]')
+    pattern = re.compile('(?xi)^([h]([e3a4]([y]|[l1]{2}[o0])|[i])|[m][o0][i][n]|[o0][l1]{1,2}[a4])$')
 
     if pattern.match(msg) != None:
       greeting = Greeter.greetings[random.randint(0, len(Greeter.greetings)-1)]
