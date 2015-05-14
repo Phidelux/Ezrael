@@ -22,12 +22,12 @@ class Greeter(Plugin):
 
   def onMsg(self, irc, channel, nick, msg):
     # Define the greetiungs pattern.
-    pattern = re.compile('[hH][eE3aA4][lL1]{2}[oO0]|[mM][oO0][iI][nN]|[oO0][lL1]{1,2}[eE3aA4]')
+    pattern = re.compile('[hH]([eE3aA4]([yY]|[lL1]{2}[oO0])|[iI])|[mM][oO0][iI][nN]|[oO0][lL1]{1,2}[eE3aA4]')
 
     if pattern.match(msg) != None:
       greeting = Greeter.greetings[random.randint(0, len(Greeter.greetings)-1)]
-    
-      if nick == "Avedo":
+
+      if nick.strip().lower() in irc.fetchAdmins():
         nick = "Master"
 
       irc.sendMessage2Channel("{0}, {1}".format(greeting, nick), channel)

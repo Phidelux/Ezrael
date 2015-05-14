@@ -44,6 +44,10 @@ class Ezrael(object):
       self.command = ''
       self.plugins = []
 
+      self.admins = []
+      if self.config['main']['plugins'] is not None:
+         self.admins.extend(self.parseParameterList(self.config['main']['admins'], ',', True))
+
       # ... and finally load all plugins enabled in the configuration.
       self.loadPlugins()
 
@@ -65,9 +69,8 @@ class Ezrael(object):
       self.ircSock.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
       print("NOTICE: Setting User")
 
-      # TODO: Reactivate for bot login.
-      # self.ircSock.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
-      # print("******* Nickserv Identify")
+      self.ircSock.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
+      print("******* Nickserv Identify")
 
       self.ircSock.send("JOIN {0} \r\n".format(self.ircChannel).encode())
       print("NOTICE: Joining channel " + str(self.ircChannel))
@@ -80,7 +83,7 @@ class Ezrael(object):
 
    def loadPlugins(self):
       if self.config['main']['plugins'] is not None:
-         plugins = self.config['main']['plugins'].split(',')
+         plugins = self.parseParameterList(self.config['main']['plugins'], ',')
 
          for module in plugins:
             plugin = __import__('plugins.' + module.lower(), globals(), locals(), [module])
@@ -90,6 +93,22 @@ class Ezrael(object):
 
          self.notifyPlugins('init')
          self.pluginsLoaded = True
+
+   def fetchAdmins(self):
+      return self.admins
+
+   def parseParameterList(self, data, seperator, toLower = False):
+      # Split data into element list ...
+      elemList = data.split(seperator)
+
+      # ... and strip leading and trailing spaces from each element.
+      elemList = map(lambda s: s.strip(), elemList)
+
+      # If needed convert all elements to lower.
+      if toLower == True: 
+         elemList = map(lambda s: s.lower(), elemList)
+
+      return elemList
 
    def notifyPlugins(self, event, *args):
       if not self.pluginsLoaded and event != 'init':
@@ -115,10 +134,6 @@ class Ezrael(object):
                ircUserHost = self.extractHost(recv)
                self.notifyPlugins('onPrivMsg', self.ircChannel, ircUserNick, ircUserMessage)
 
-               # Handle queries.
-               print ( "Query "  + "@" + ircUserNick + ": " + ircUserMessage)
-               self.privCommand(ircUserNick, ircUserMessage )
-
             # Notify the plugins if we received a message.
             elif str(recv).find("PRIVMSG") != -1:
                ircUserNick = self.extractUser(recv)
@@ -131,7 +146,7 @@ class Ezrael(object):
                # "!" Indicated a command
                if ( str(ircUserMessage[0]) == "!" ):
                   self.command = ircUserMessage
-                  self.processCommand(ircUserNick, ircUserMessage)
+                  self.processCommand(ircUserNick, self.ircChannel)
                else:
                   self.processMessage(ircUserMessage, ircUserNick, self.extractMessage(recv) )
 
@@ -147,7 +162,7 @@ class Ezrael(object):
 
                # Send a greet to users joining the channel.
                if(ircUserNick != self.ircNick):
-                  self.ircSock.send("NOTICE {0} :Willkommen im Channel {1}. \r\n".format(ircUserNick, self.ircChannel).encode())
+                  self.ircSock.send("NOTICE {0} :Welcome to {1}. \r\n".format(ircUserNick, self.ircChannel).encode())
 
             # Notify the plugins if someone pinged ezrael.
             elif str(recv).find("PING") != -1:
@@ -187,17 +202,6 @@ class Ezrael(object):
 
       return data.strip()
 
-   def privCommand(self, user, data):
-      command = (data).lower()
-      command = command.split()
-      print(command)
-      if (command[0] == "join"):
-         print ("er will joinen")
-         self.joinChannel(command[1])
-
-         str_buff = ("NOTICE " + user + " :Joined Channel " + command[1] + "\r\n")
-         self.ircSock.send(str_buff.encode())
-
    def processMessage(self, data, nickname, channel):
       # TODO: Implement Plugin based message handling.
       pass
@@ -206,18 +210,16 @@ class Ezrael(object):
       self.ircSock.send(data)
 
    # This function sends a message to a channel, which must start with a #.
-   def sendMessage2Channel(self,data,channel):
-      print ( ( "%s: %s") % (self.ircNick, data) )
+   def sendMessage2Channel(self, data, channel):
+      print( "{0}: {1}".format(self.ircNick, data) )
       self.ircSock.send( (("PRIVMSG %s :%s\r\n") % (channel, data)).encode() )
 
    # This function takes a channel, which must start with a #.
-   def joinChannel(self,channel):
+   def joinChannel(self, channel):
       if (channel[0] == "#"):
-         str_buff = ( "JOIN %s \r\n" ) % (channel)
-         self.ircSock.send (str_buff.encode())
-         buffer = ("PRIVMSG chanserv :op %s \r\n") % (channel)
-         self.ircSock.send (buffer.encode())
-         print ("******* Try to OP me with Chanserv on %s" % channel)
+         self.ircSock.send ("JOIN {0} \r\n".format(channel).encode())
+         self.ircSock.send ("PRIVMSG chanserv :op {0} \r\n".format(channel).encode())
+         print ("NOTICE: Trying to obtain operator status with Chanserv on %s" % channel)
 
          # This needs to test if the channel is full
          # This needs to modify the list of active channels
@@ -225,8 +227,7 @@ class Ezrael(object):
    # This function takes a channel, which must start with a #.
    def quitChannel(self,channel):
       if (channel[0] == "#"):
-         str_buff = ( "PART %s \r\n" ) % (channel)
-         self.ircSock.send (str_buff.encode())
+         self.ircSock.send ("PART {0} \r\n".format(channel).encode())
          # This needs to modify the list of active channels
 
    # This nice function here runs ALL the commands.
@@ -239,24 +240,23 @@ class Ezrael(object):
       command = self.command[1:].split()[0].strip().lower()
       data = self.command[1+len(command):].strip()
 
-      print("User: " + user)
-      print("Command: " + command)
-      print("Data: " + data)
+      print("User: {0}".format(user))
+      print("Channel: {0}".format(channel))
+      print("Command: {0}".format(command))
+      print("Data: {0}".format(data))
 
       # All admin only commands go in here.
-      if (user == "Avedo"):
+      if (user.lower() in self.admins):
          # This command shuts the bot down.
          if (command == "quit"):
-            str_buff = ( "QUIT %s \r\n" ) % (channel)
-            self.ircSock.send (str_buff.encode())
+            self.ircSock.send("QUIT {0} \r\n".format(channel).encode())
             self.ircSock.close()
             self.isConnected = False
             self.shouldReconnect = False
 
          elif (command == "op"):
-            str_buff = ("MODE %s +o Avedo \r\n") % (channel)
-            self.ircSock.send (str_buff.encode())
-            self.sendMessage2Channel( ("4Es will op von mir"), channel )
+            self.ircSock.send("MODE {0} +o Avedo \r\n".format(channel).encode())
+            self.sendMessage2Channel("It wants op from me", channel )
 
          # These commands take parameters
          else:
