@@ -13,6 +13,8 @@ Then you configure the name and other parameters in the ezrael.ini configuration
 
     $ python3 main.py
 
+You can overwrite the default configuration within a *ezrael.custom.ini* if you don't like to change repository-related files.
+
 ## License
 
 The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.

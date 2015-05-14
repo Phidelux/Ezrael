@@ -6,6 +6,7 @@ import socket, time
 import configparser
 import random
 import os
+import ssl
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
 class Ezrael(object):
@@ -19,14 +20,18 @@ class Ezrael(object):
 
       # ... and generate the path to the config file.
       configFile = os.path.join(basepath, 'ezrael.ini')
+      configFileCustom = os.path.join(basepath, 'ezrael.custom.ini')
+      self.caCertsPath = os.path.join(basepath, "cacerts.txt")
 
       # Load connection data from main config ...
       self.config = configparser.ConfigParser()
       self.config.read(configFile)
+      self.config.read(configFileCustom)
 
       # ... and assign them to locals.
       self.ircHost = self.config['main']['host']
       self.ircPort = int(self.config['main']['port'])
+      self.ircSSL = bool(self.config['main']['ssl'])
       self.ircNick = self.config['main']['nick']
       self.ircPassword = self.config['main']['password']
       self.ircChannel = '#' + self.config['main']['channel']
@@ -58,6 +63,14 @@ class Ezrael(object):
       self.shouldReconnect = True
       try:
          self.ircSock.connect((self.ircHost, self.ircPort))
+         if self.ircSSL:
+            self.ircSock = ssl.wrap_socket(self.ircSock,
+                                           # flag that certificate from the other side of connection is required
+                                           # and should be validated when wrapping
+                                           cert_reqs=ssl.CERT_REQUIRED,
+                                           # file with root certificates
+                                           ca_certs=self.caCertsPath
+                                           )
       except:
          print("Error: Could not connect to Host " + str(self.ircHost) + ":" + str(self.ircPort))
          exit(1) # TODO: We should make it reconnect if it gets an error here
@@ -105,7 +118,7 @@ class Ezrael(object):
       elemList = map(lambda s: s.strip(), elemList)
 
       # If needed convert all elements to lower.
-      if toLower == True: 
+      if toLower == True:
          elemList = map(lambda s: s.lower(), elemList)
 
       return elemList
