@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import requests
 import json
-import re
 
 class Wiki(Plugin):
     def onMsg(self, irc, channel, nick, msg):

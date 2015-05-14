@@ -11,6 +11,8 @@ class EasterEgg(Plugin):
 
     if command == "moo":
       irc.sendMessage2Channel("MOO yourself, " + nick, channel )
+    elif command == "xkcd":
+      irc.sendMessage2Channel("https://c.xkcd.com/random/comic/", channel)
     elif command == "train":
       irc.sendMessage2Channel("Choo Choo! It's the Mystery Train!", channel )
     elif command == "poo":
@@ -20,3 +22,12 @@ class EasterEgg(Plugin):
       irc.sendMessage2Channel("\__/", channel )
       irc.sendMessage2Channel(" ^^", channel )
       irc.sendMessage2Channel("DUCKTALES UhhhHuuuuuuu", channel )
+    elif command == "duckduck":
+      irc.sendMessage2Channel(".......ENTE......:", channel )
+      irc.sendMessage2Channel(":       ,~~.     :", channel )
+      irc.sendMessage2Channel("E      (  6 )-_, E", channel )
+      irc.sendMessage2Channel("N (\___ )=='-'   N", channel )
+      irc.sendMessage2Channel("T  \ .   ) )     T", channel )
+      irc.sendMessage2Channel("E   \ `-' /      E", channel )
+      irc.sendMessage2Channel(": ~~'`~'`~'`~`~' :", channel )
+      irc.sendMessage2Channel(":......ENTE......:", channel )
