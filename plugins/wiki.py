@@ -58,7 +58,6 @@ class Wiki(Plugin):
         redirect = content.select('div.redirectMsg > ul > li > a')
         if len(redirect) > 0:
             # If it contains a redirect extract the redirect title.
-            pattern = re.compile(r"\?title=(.*)&")
             target = redirect[0]['href']
             start = target.find('?title=') + 7
             end = target.find('&', start)
