@@ -18,13 +18,6 @@ class EasterEgg(Plugin):
       irc.sendMessage2Channel("Choo Choo! It's the Mystery Train!", channel )
     elif command == "poo":
       irc.sendMessage2Channel("Don't be a potty mouth", channel )
-    elif command == "rainbow":
-      irc.sendMessage2Channel(
-        "I love {0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}{14}{15}{16}!".format(
-          Color.bold_black, 'R', Color.bold_blue, 'A', Color.bold_green, 'I', 
-          Color.bold_red, 'N', Color.bold_violet, 'B', Color.bold_yellow, 'O', 
-          Color.bold_cyan, 'W', Color.bold_white, 'S', Color.bold_black
-        ), channel )
     elif command == "duck":
       irc.sendMessage2Channel("__(\"<", channel )
       irc.sendMessage2Channel("\__/", channel )
