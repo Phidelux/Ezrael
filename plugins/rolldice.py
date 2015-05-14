@@ -2,10 +2,10 @@ from core.plugin import Plugin
 import random
 import re
 
-class RoleDice(Plugin):
+class RollDice(Plugin):
   def onMsg(self, irc, channel, nick, msg):
     # Make sure an actual command was sent.
-    if str(msg[0]) != '!' or str(msg[1:9]).lower() != 'roledice':
+    if str(msg[0]) != '!' or (str(msg[1:9]).lower() != 'rolldice' and str(msg[1:5]).lower() != 'dice'):
       return
 
     # Define default values.
