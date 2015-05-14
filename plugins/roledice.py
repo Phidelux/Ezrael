@@ -24,8 +24,18 @@ class RoleDice(Plugin):
     elif len(matches) > 0:
       numEyes = max([2, int(matches[0])])
 
-    results = [];
-    for i in range(0, numRoles):
-      results.append(str(random.randint(1, numEyes)))
+    if numEyes != 20 or numRoles > 1:
+      results = [];
+      for i in range(0, numRoles):
+        results.append(str(random.randint(1, numEyes)))
 
-    irc.sendMessage2Channel(", ".join(results), channel)
+      irc.sendMessage2Channel(", ".join(results), channel)
+    else:
+      result = random.randint(1, numEyes)
+
+      if result == 1:
+        irc.sendMessage2Channel("1 -> CRITICAL!", channel)
+      elif result == 20:
+        irc.sendMessage2Channel("20 -> FLOP! YOU GET BEATEN UP!", channel)
+      else:
+        irc.sendMessage2Channel("{0}".format(result), channel)
