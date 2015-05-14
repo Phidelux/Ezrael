@@ -24,7 +24,9 @@ class RollDice(Plugin):
     elif len(matches) > 0:
       numEyes = max([2, int(matches[0])])
 
-    if numEyes != 20 or numRoles > 1:
+    if numEyes == 42:
+      irc.sendMessage2Channel("This is the Answer to The Ultimate Question of Life, the Universe, and Everything!", channel)
+    elif numEyes != 20 or numRoles > 1:
       results = [];
       for i in range(0, numRoles):
         results.append(str(random.randint(1, numEyes)))
