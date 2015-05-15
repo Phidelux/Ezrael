@@ -94,10 +94,10 @@ class VoteInstance():
                 self.votes_invalid[option] = value
             self.count_invalid += value
 
-    def print_result(self, winners, count):
+    def print_result(self, votes, winners, count):
         if len(winners):
             if count > 0:
-                quote = self.votes_valid[winners[0]] / count * 100
+                quote = votes[winners[0]] / count * 100
             else:
                 quote = 0
             if self.modes['random'] or len(winners) == 1:
@@ -148,10 +148,10 @@ class VoteInstance():
 
         if self.modes['collect']:
             winners_both = [option for option in votes_both if votes_both[option] == max_val_both]
-            self.print_result(winners_both, count_both)
+            self.print_result(votes_both, winners_both, count_both)
         else:
             winners_valid = [option for option in votes_valid if votes_valid[option] == max_val_valid]
-            self.print_result(winners_valid, count_valid)
+            self.print_result(votes_valid, winners_valid, count_valid)
 
         if self.modes['verbose'] == 2:
             if self.modes['collect']:
