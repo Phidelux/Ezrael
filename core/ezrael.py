@@ -157,7 +157,7 @@ class Ezrael(object):
                print ( (str(recv)).split()[2]  + "@" + ircUserNick + ": " + ircUserMessage)
 
                # "!" Indicated a command
-               if ( str(ircUserMessage[0]) == "!" ):
+               if len(str(ircUserMessage)) > 0 and str(ircUserMessage[0]) == "!":
                   self.command = ircUserMessage
                   self.processCommand(ircUserNick, self.ircChannel)
                else:
