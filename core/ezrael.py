@@ -31,7 +31,7 @@ class Ezrael(object):
       # ... and assign them to locals.
       self.ircHost = self.config['main']['host']
       self.ircPort = int(self.config['main']['port'])
-      self.ircSSL = bool(self.config['main']['ssl'])
+      self.ircSSL = self.config['main']['ssl'].lower() in ['true', '1', 't']
       self.ircNick = self.config['main']['nick']
       self.ircPassword = self.config['main']['password']
       self.ircChannel = '#' + self.config['main']['channel']
@@ -221,6 +221,9 @@ class Ezrael(object):
 
    def sendPlain(self, data):
       self.ircSock.send(data)
+
+   def sendMessage2Nick(self, data, nick):
+      self.ircSock.send( (("PRIVMSG %s :%s\r\n") % (nick, data)).encode() )
 
    # This function sends a message to a channel, which must start with a #.
    def sendMessage2Channel(self, data, channel):
