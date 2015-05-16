@@ -71,12 +71,11 @@ class EasterEgg(Plugin):
             irc.sendMessage2Channel(": ~~'`~'`~'`~`~' :", channel)
             irc.sendMessage2Channel(":......ENTE......:", channel)
         elif command == "gurke":
-            irc.sendMessage2Channel("   ".           ,#  ", channel)
+            irc.sendMessage2Channel("   #.           ,# ", channel)
             irc.sendMessage2Channel("   \ `-._____,-'=/", channel)
             irc.sendMessage2Channel("____`._ ----- _,'_____PhS", channel)
             irc.sendMessage2Channel("       `-----'", channel)
         elif command == "avedo":
-
             irc.sendMessage2Channel("   ]j                     TL", channel)
             irc.sendMessage2Channel("   ]j                     wL", channel)
             irc.sendMessage2Channel("   [L NYCLvLvLvLLLvLL]*I4 *v", channel)
