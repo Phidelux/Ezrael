@@ -20,14 +20,24 @@ class Greeter(Plugin):
     "Priwit", "Szia", "Szervusz"
   ]
 
+  greeted = {}
+
   def onMsg(self, irc, channel, nick, msg):
     # Define the greetiungs pattern.
     pattern = re.compile('(?xi)^([h]([e3a4]([y]|[l1]{2}[o0])|[i])|[m][o0][i][n]|[o0][l1]{1,2}[a4])$')
 
     if pattern.match(msg) != None:
-      greeting = Greeter.greetings[random.randint(0, len(Greeter.greetings)-1)]
 
-      if nick.strip().lower() in irc.fetchAdmins():
-        nick = "Master"
+      if channel not in self.greeted:
+        self.greeted[channel] = []
 
-      irc.sendMessage2Channel("{0}, {1}".format(greeting, nick), channel)
+      if nick not in self.greeted[channel]:
+
+        greeting = Greeter.greetings[random.randint(0, len(Greeter.greetings)-1)]
+
+        if nick.strip().lower() in irc.fetchAdmins():
+          nick = "Master"
+        else:
+          self.greeted[channel].append(nick)
+
+        irc.sendMessage2Channel("{0}, {1}".format(greeting, nick), channel)

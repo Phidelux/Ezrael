@@ -20,7 +20,7 @@ class Plugin(object):
     def onMsg(self, irc, channel, nick, msg):
         pass
 
-    def onPrivMsg(self, irc, channel, nick, msg):
+    def onPrivMsg(self, irc, nick, msg):
         pass
 
     def onNotice(self, irc, channel, nick, msg):

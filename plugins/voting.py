@@ -181,7 +181,7 @@ class Voting(Plugin):
                        ' Modes: verbose (v), collect (o), random (r)'
         }
         self.ezrael = None
-        self.voting = None
+        self.votings = {}
 
     def init(self, ezrael):
         self.ezrael = ezrael
@@ -200,26 +200,26 @@ class Voting(Plugin):
 
         if cmd == 'vote':
             option = msg[6:].strip()
-            if self.voting is None:
-                self.msg(nick, "No active voting.")
-            elif self.voting.may_vote(nick, option):
-                self.voting.vote(nick, option)
+            if channel not in self.votings:
+                self.msg(nick, "No active voting (within channel {0}).".format(channel))
+            elif self.votings[channel].may_vote(nick, option):
+                self.votings[channel].vote(nick, option)
             else:
                 self.msg(nick, "You're not supposed to vote for {0}.".format(option))
         else:
             if nick.lower() in self.ezrael.admins:
                 if cmd == 'votestart':
-                    if self.voting is not None:
-                        self.voting.print()
-                    self.voting = VoteInstance(lambda x: irc.sendMessage2Channel(x, channel))
-                    self.voting.init(msg[11:].strip().split(","))
+                    if channel in self.votings:
+                        self.votings[channel].print()
+                    self.votings[channel] = VoteInstance(lambda x: irc.sendMessage2Channel(x, channel))
+                    self.votings[channel].init(msg[11:].strip().split(","))
                     return
                 elif cmd == 'voteend':
-                    if self.voting is None:
-                        self.msg(nick, "No active voting.")
+                    if channel not in self.votings:
+                        self.msg(nick, "No active voting (within channel {0}).".format(channel))
                     else:
-                        self.voting.set_modes(msg[9:].strip())
-                        self.voting.print()
-                        self.voting = None
+                        self.votings[channel].set_modes(msg[9:].strip())
+                        self.votings[channel].print()
+                        del self.votings[channel]
             else:
                 self.msg(nick, "Operation not permitted.")
