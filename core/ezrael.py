@@ -144,13 +144,11 @@ class Ezrael(object):
             # Notify the plugins if we received a private message.
             if str(recv).find("PRIVMSG " + self.ircNick) != -1:
                ircUserNick = self.extractUser(recv)
-               ircUserHost = self.extractHost(recv)
                self.notifyPlugins('onPrivMsg', self.ircChannel, ircUserNick, ircUserMessage)
 
             # Notify the plugins if we received a message.
             elif str(recv).find("PRIVMSG") != -1:
                ircUserNick = self.extractUser(recv)
-               ircUserHost = self.extractHost(recv)
                self.notifyPlugins('onMsg', self.ircChannel, ircUserNick, ircUserMessage)
 
                # Print normal messages.
@@ -197,7 +195,10 @@ class Ezrael(object):
       return str(recv).split('!')[0].split(':')[1]
 
    def extractHost(self, recv):
-      return str(recv).split('@')[1].split(' ')[0]
+      if '@' in str(recv):
+         return str(recv).split('@')[1].split(' ')[0]
+
+      return None
 
    def extractMessage(self, recv):
       return self.data2message(str(recv))
