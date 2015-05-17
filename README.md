@@ -23,8 +23,12 @@ The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.
 
 - [ ] Simple restart command 
 - [ ] Rehash (Reload Plugins to prevent bot from reconnecting)
-- [ ] Seen script (Tell others when a user was last seen)
 - [ ] Channel db (Allow different channels with different coinfigurations)
 - [ ] Reply to admin commands just via /msg and via /notice 
 - [ ] Implement !help and !command commands
-- [ ] Add a !thetime, !time and !date plugin
+
+## Plugin Ideas
+
+- Calculator (!calc <expression>)
+- Sudoku Generator (!sudoku)
+- Last seen (!lastseen <username>)
