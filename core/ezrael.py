@@ -146,10 +146,8 @@ class Ezrael(object):
             bunch = self.ircSock.recv(1024)
             if not bunch:
                 continue
-            msg = str(bunch)
-            bounding = msg[1]
-            msg = msg[2:len(msg) - 5].replace("\\" + bounding, bounding).replace("\\\\", "\\")
-            msgs = msg.split("\\r\\n")
+            msg = bunch.decode()
+            msgs = msg.split("\r\n")
             # for each message within received bunch ...
             for m in msgs:
                 if not m:
