@@ -1,20 +1,20 @@
 from core.plugin import Plugin
 import urllib.request
 
+
 class Fortune(Plugin):
-    def onMsg(self, irc, channel, nick, msg):
-        # Make sure an actual command was sent.
-        if str(msg[0]) != '!' or str(msg[1:8]).lower() != 'fortune':
+    def on_command(self, irc, message):
+        if message.cmd[0] != 'fortune':
             return
 
         # Setup the request url, ...
-        iheartquotes = 'http://www.iheartquotes.com/api/v1/random' \
-                       + '?show_permalink=false' \
-                       + '&max_characters=200' \
-                       + '&format=text'
+        url = 'http://www.iheartquotes.com/api/v1/random' \
+              + '?show_permalink=false' \
+              + '&max_characters=200' \
+              + '&format=text'
 
         # ... fetch a fortune from http://iheartquotes.com, ...
-        fortune = urllib.request.urlopen(iheartquotes).read()
+        fortune = urllib.request.urlopen(url).read()
 
         # ... remove linebreaks and tabs, ...
         fortune = str(fortune, 'utf-8') \
@@ -28,8 +28,8 @@ class Fortune(Plugin):
             '&lt;': '<', '&gt;': '>'
         }
 
-        for (k,v) in special.items():
+        for (k, v) in special.items():
             fortune = fortune.replace(k, v)
 
         # ... and send it as message to the irc channel.
-        irc.sendMessage2Channel('[Fortune] ' + fortune, channel)
+        irc.send_message('[Fortune] ' + fortune, message.channel)

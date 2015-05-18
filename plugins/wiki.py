@@ -2,7 +2,9 @@ from core.plugin import Plugin
 from bs4 import BeautifulSoup
 import urllib.parse
 import requests
-import json
+
+# TODO apply new plugin-schema
+# TODO fix plugin
 
 class Wiki(Plugin):
     def onMsg(self, irc, channel, nick, msg):
@@ -18,7 +20,7 @@ class Wiki(Plugin):
         wikiSoup = BeautifulSoup(str(wikiJson))
 
         redirect = self.checkRedirect(wikiSoup)
-        if(redirect != None):
+        if (redirect != None):
             wikiJson = self.fetchWiki(redirect)
 
         # Extract the content block ...
@@ -51,7 +53,7 @@ class Wiki(Plugin):
             .replace('\t', ' ')
 
         # ... and send it as message to the irc channel.
-        irc.sendMessage2Channel('[Wikipedia] ' + beautyWiki, channel)
+        irc.send_message('[Wikipedia] ' + beautyWiki, channel)
 
     def checkRedirect(self, content):
         # Check if the given content contains a redirect.

@@ -1,33 +1,50 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from core.colors import Color
-import socket, time
+import socket
 import configparser
 import random
 import os
 import ssl
-import re
+from core.message import Message
+
+COMMAND_PREFIX = "!"
+
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
 class Ezrael(object):
+    @staticmethod
+    def map_strip(elements, to_lower=False):
+        elements = map(lambda s: s.strip(), elements)
+        if to_lower:
+            elements = map(lambda s: s.lower(), elements)
+        return elements
+
+    @staticmethod
+    def norm_channel(channel):
+        if channel[0] == "#":
+            return channel
+        return "#" + channel
+
+    command_prefix = COMMAND_PREFIX
+    command_prefix_len = len(COMMAND_PREFIX)
+
     # The default constructor - declaring global variables
     # channel should be rewritten to be a list, which then loops to connect, per channel.
     # This needs to support an alternate nick.
     def __init__(self):
         # Fetch the current working directory ...
-        basepath = os.path.dirname(os.path.realpath(__file__))
-        basepath = basepath[:basepath.rfind('/')]
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        base_path = base_path[:base_path.rfind('/')]
 
         # ... and generate the path to the config file.
-        configFile = os.path.join(basepath, 'ezrael.ini')
-        configFileCustom = os.path.join(basepath, 'ezrael.custom.ini')
-        self.caCertsPath = os.path.join(basepath, "cacerts.txt")
+        config_file = os.path.join(base_path, 'ezrael.ini')
+        config_file_custom = os.path.join(base_path, 'ezrael.custom.ini')
+        self.base_path = base_path
 
         # Load connection data from main config ...
         self.config = configparser.ConfigParser()
-        self.config.read(configFile)
-        self.config.read(configFileCustom)
+        self.config.read(config_file)
+        self.config.read(config_file_custom)
 
         # ... and assign them to locals.
         self.ircHost = self.config['main']['host']
@@ -52,16 +69,17 @@ class Ezrael(object):
 
         self.admins = []
         if self.config['main']['plugins'] is not None:
-            self.admins.extend(self.parseParameterList(self.config['main']['admins'], ',', True))
+            self.admins.extend(self.map_strip(self.config['main']['admins'].split(','), True))
 
         # ... and finally load all plugins enabled in the configuration.
-        self.loadPlugins()
+        self.load_plugins()
 
     # This is the bit that controls connection to a server & channel.
     # It should be rewritten to allow multiple channels in a single server.
     # This needs to have an "auto identify" as part of its script, or support a custom connect message.
     def connect(self):
         self.shouldReconnect = True
+        # noinspection PyBroadException
         try:
             self.ircSock.connect((self.ircHost, self.ircPort))
             if self.ircSSL:
@@ -70,7 +88,7 @@ class Ezrael(object):
                                                # and should be validated when wrapping
                                                cert_reqs=ssl.CERT_REQUIRED,
                                                # file with root certificates
-                                               ca_certs=self.caCertsPath
+                                               ca_certs=os.path.join(self.base_path, "ca-certs.txt")
                                                )
         except:
             print("Error: Could not connect to Host " + str(self.ircHost) + ":" + str(self.ircPort))
@@ -90,218 +108,110 @@ class Ezrael(object):
         print("NOTICE: Joining channel " + str(self.ircChannel))
 
         self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
-        print("NOTICE: Trying to optain operator status ...")
+        print("NOTICE: Trying to obtain operator status ...")
 
         self.isConnected = True
         self.listen()
 
-    def loadPlugins(self):
+    def load_plugins(self):
         if self.config['main']['plugins'] is not None:
-            plugins = self.parseParameterList(self.config['main']['plugins'], ',')
+            plugins = self.map_strip(self.config['main']['plugins'].split(','))
 
             for module in plugins:
-                plugin = __import__('plugins.' + module.lower(), globals(), locals(), [module])
-                print('NOTICE: Loaded plugin ' + module)
-                instance = getattr(plugin, module)(self.config)
-                self.plugins.append(instance)
+                if module:
+                    plugin = __import__('plugins.' + module.lower(), globals(), locals(), [module])
+                    print('NOTICE: Loaded plugin ' + module)
+                    instance = getattr(plugin, module)(self.config)
+                    self.plugins.append(instance)
 
-            self.notifyPlugins('init')
+            self.notify_plugins('init')
             self.pluginsLoaded = True
 
-    def fetchAdmins(self):
+    def fetch_admins(self):
         return self.admins
 
-    def parseParameterList(self, data, seperator, toLower=False):
-        # Split data into element list ...
-        elemList = data.split(seperator)
-
-        # ... and strip leading and trailing spaces from each element.
-        elemList = map(lambda s: s.strip(), elemList)
-
-        # If needed convert all elements to lower.
-        if toLower == True:
-            elemList = map(lambda s: s.lower(), elemList)
-
-        return elemList
-
-    def notifyPlugins(self, event, *args):
+    def notify_plugins(self, event, *args):
         if not self.pluginsLoaded and event != 'init':
             return
 
         for plugin in self.plugins:
             getattr(plugin, event)(self, *args)
 
+    def trigger(self, event, message):
+        if message.propagate:
+            self.notify_plugins(event, message)
+
     def listen(self):
         while self.isConnected:
-            recv = self.ircSock.recv(1024)
-
-            if recv != "":
-                print(str(recv))
-
-                # Notify the plugins that we received something.
-                ircUserMessage = self.extractMessage(recv)
-                self.notifyPlugins('onRecv', ircUserMessage)
-
-                channel = self.extractChannel(recv)
-
-                # Notify the plugins if we received a private message.
-                if str(recv).find("PRIVMSG " + self.ircNick) != -1:
-                    ircUserNick = self.extractUser(recv)
-                    self.notifyPlugins('onPrivMsg', ircUserNick, ircUserMessage)
-
-                # Notify the plugins if we received a message.
-                elif str(recv).find("PRIVMSG") != -1:
-                    ircUserNick = self.extractUser(recv)
-                    self.notifyPlugins('onMsg', channel, ircUserNick, ircUserMessage)
-
-                    # Print normal messages.
-                    print((str(recv)).split()[2] + "@" + ircUserNick + ": " + ircUserMessage)
-
-                    # "!" Indicated a command
-                    if len(str(ircUserMessage)) > 0 and str(ircUserMessage[0]) == "!":
-                        self.command = ircUserMessage
-                        self.processCommand(ircUserNick, channel)
-                    else:
-                        self.processMessage(ircUserMessage, ircUserNick, self.extractMessage(recv))
-
-                # Notify the plugins if we were kicked from the channel.
-                elif str(recv).find("KICK " + channel + " " + self.ircNick) != -1:
-                    ircUserNick = self.extractUser(recv)
-                    self.notifyPlugins('onKick', channel, ircUserNick, ircUserMessage)
-
-                # Notify the plugins if someone joined the channel.
-                elif str(recv).find("JOIN " + channel) != -1:
-                    ircUserNick = self.extractUser(recv)
-                    self.notifyPlugins('onJoin', channel, ircUserNick, ircUserMessage)
-
-                    # Send a greet to users joining the channel.
-                    if (ircUserNick != self.ircNick):
-                        self.ircSock.send(
-                            "NOTICE {0} :Welcome to {1}. \r\n".format(ircUserNick, channel).encode())
-
-                # Notify the plugins if someone pinged ezrael.
-                elif str(recv).find("PING") != -1:
-                    self.notifyPlugins('onPing', ircUserMessage)
-
-                    # Send a PONG on an incoming PING.
-                    print("NOTICE: PONG {0}\r\n".format(recv.split()[1]).encode())
-                    self.ircSock.send("PONG {0}\r\n".format(recv.split()[1]).encode())
-
-                # Notify the plugins if someone writes a notice.
-                elif str(recv).find("NOTICE") != -1:
-                    ircUserNick = self.extractUser(recv)
-                    self.notifyPlugins('onNotice', channel, ircUserNick, ircUserMessage)
+            bunch = self.ircSock.recv(1024)
+            if not bunch:
+                continue
+            msg = str(bunch)
+            bounding = msg[1]
+            msg = msg[2:len(msg) - 5].replace("\\" + bounding, bounding)
+            msgs = msg.split("\\r\\n")
+            # for each message within received bunch ...
+            for m in msgs:
+                if not m:
+                    continue
+                # ... generate Message-object, ...
+                message = Message(self, m)
+                print("Received {0}".format(message))
+                # ... run built-in commands and ...
+                if len(message.cmd):
+                    self.check_commands(message)
+                # ... trigger events for plugins
+                for event in message.get_events():
+                    self.trigger(event, message)
 
         if self.shouldReconnect:
             self.connect()
 
-    def extractUser(self, recv):
-        return str(recv).split('!')[0].split(':')[1]
-
-    def extractChannel(self, recv):
-        data = str(recv).split(':')[1]
-        if ' #' in data:
-            return '#' + data.split(' #')[1].split(' ')[0].strip()
-        return self.ircChannel  # return main channel if not channel-related message
-
-    def extractHost(self, recv):
-        if '@' in str(recv):
-            return str(recv).split('@')[1].split(' ')[0]
-
-        return None
-
-    def extractMessage(self, recv):
-        return self.data2message(str(recv))
-
-    def data2message(self, data):
-        # Remove leading colon ...
-        data = data[data.find(':') + 1:len(data)]
-
-        # ... and extract all data after the next one.
-        data = data[data.find(':') + 1:len(data)]
-
-        # Remove strange data at end of line.
-        if data[len(data) - 5:] == "\\r\\n'":
-            data = data[0:len(data) - 5]
-
-        return data.strip()
-
-    def processMessage(self, data, nickname, channel):
-        # TODO: Implement Plugin based message handling.
-        pass
-
-    def sendPlain(self, data):
-        self.ircSock.send(data)
-
-    def sendMessage2Nick(self, data, nick):
-        self.ircSock.send((("PRIVMSG %s :%s\r\n") % (nick, data)).encode())
-
-    # This function sends a message to a channel, which must start with a #.
-    def sendMessage2Channel(self, data, channel):
-        print("{0}: {1}".format(self.ircNick, data))
-        self.ircSock.send((("PRIVMSG %s :%s\r\n") % (channel, data)).encode())
-
-    # This function takes a channel, which must start with a #.
-    def joinChannel(self, channel):
-        if (channel[0] == "#"):
-            self.ircSock.send("JOIN {0} \r\n".format(channel).encode())
-            self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(channel).encode())
-            print("NOTICE: Trying to obtain operator status with Chanserv on %s" % channel)
-
-            # This needs to test if the channel is full
-            # This needs to modify the list of active channels
-
-    # This function takes a channel, which must start with a #.
-    def quitChannel(self, channel):
-        if (channel[0] == "#"):
-            self.ircSock.send("PART {0} \r\n".format(channel).encode())
-            # This needs to modify the list of active channels
-
-    # This nice function here runs ALL the commands.
-    # For now, we only have 2: root admin, and anyone.
-    def processCommand(self, user, channel):
-        # This line makes sure an actual command was sent, not a plain "!"
-        if (len(self.command.split()) == 0):
-            return
-
-        command = self.command[1:].split()[0].strip().lower()
-        data = self.command[1 + len(command):].strip()
-
-        print("User: {0}".format(user))
-        print("Channel: {0}".format(channel))
-        print("Command: {0}".format(command))
-        print("Data: {0}".format(data))
-
-        # All admin only commands go in here.
-        if (user.lower() in self.admins):
-            # This command shuts the bot down.
-            if (command == "quit"):
-                self.ircSock.send("QUIT {0} \r\n".format(channel).encode())
+    def check_commands(self, message):
+        if message.nick.lower() in self.admins:
+            # admin commands
+            print("Command by {0}: {1}".format(message.nick, " ".join(message.cmd)))
+            if message.cmd[0] == 'quit':
+                self.ircSock.send("QUIT {0} \r\n".format(self.ircChannel).encode())
                 self.ircSock.close()
                 self.isConnected = False
                 self.shouldReconnect = False
 
-            elif (command == "op"):
-                self.ircSock.send("MODE {0} +o Avedo \r\n".format(channel).encode())
-                self.sendMessage2Channel("It wants op from me", channel)
+            elif message.cmd[0] == 'op':
+                self.ircSock.send("MODE {0} +o {1} \r\n".format(message.channel, message.nick).encode())
 
-            # These commands take parameters
-            else:
-                # This command makes the bot join a channel
-                # This needs to be rewritten in a better way, to catch multiple channels
-                if (command == "join"):
-                    if (data[0] == "#"):
-                        irc_channel = data.split()[0]
-                    else:
-                        irc_channel = "#" + data.split()[0]
-                    self.joinChannel(irc_channel)
+            elif message.cmd[0] == 'join':
+                if len(message.cmd) > 1:
+                    for channel in message.cmd[1:]:
+                        self.join_channel(self.norm_channel(channel))
+                else:
+                    self.send_message("Syntax: {0}join [#]CHANNEL,...".format(self.command_prefix), message.nick)
 
-                # This command makes the bot part a channel
-                # This needs to be rewritten in a better way, to catch multiple channels
-                if (command[0] == "part"):
-                    if (data[0] == "#"):
-                        irc_channel = data.split()[0]
-                    else:
-                        irc_channel = "#" + data.split()[0]
+            elif message.cmd[0] == 'part' or message.cmd[0] == 'leave':
+                if len(message.cmd) > 1:
+                    for channel in message.cmd[1:]:
+                        self.quit_channel(self.norm_channel(channel))
+                else:
+                    self.quit_channel(message.channel)
 
-                    self.quitChannel(irc_channel)
+    def send(self, data):
+        self.ircSock.send(data)
+
+    def send_message(self, data, receiver):
+        self.ircSock.send(("PRIVMSG %s :%s\r\n" % (receiver, data)).encode())
+
+    def send_notice(self, data, receiver):
+        self.ircSock.send(("NOTICE %s :%s\r\n" % (receiver, data)).encode())
+
+    def join_channel(self, channel):
+        channel = self.norm_channel(channel)
+        self.ircSock.send("JOIN {0} \r\n".format(channel).encode())
+        self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(channel).encode())
+        print("NOTICE: Trying to obtain operator status with Chanserv on %s" % channel)
+        # This needs to test if the channel is full
+        # This needs to modify the list of active channels
+
+    def quit_channel(self, channel):
+        channel = self.norm_channel(channel)
+        self.ircSock.send("PART {0} \r\n".format(channel).encode())
+        # This needs to modify the list of active channels

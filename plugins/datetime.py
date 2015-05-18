@@ -1,24 +1,17 @@
 from core.plugin import Plugin
 import datetime
 
+
 class Datetime(Plugin):
-  def onMsg(self, irc, channel, nick, msg):
-    # Prepare the message ...
-    msg = msg.strip().lower()
+    def on_command(self, irc, message):
+        if message.cmd[0] not in ['time', 'date', 'datetime']:
+            return
 
-    # ... and ensure an actual command was sent.
-    if msg not in ['!time', '!date', '!datetime']:
-      return
+        now = datetime.datetime.now()
 
-    # ... otherwise fetch the current date and time.
-    now = datetime.datetime.now()
-
-    if msg == '!time':
-      # Generate the formated string and return it.
-      irc.sendMessage2Channel(now.strftime("%H:%M"), channel)
-    elif msg == '!date':
-      # Generate the formated string and return it.
-      irc.sendMessage2Channel(now.strftime("%A, %d. %B %Y"), channel)
-    elif msg == '!datetime':
-      # Generate the formated string and return it.
-      irc.sendMessage2Channel(now.strftime("%A, %d. %B %Y - %H:%M"), channel)
+        if message.cmd[0] == 'time':
+            irc.send_message(now.strftime("%H:%M"), message.channel)
+        elif message.cmd[0] == 'date':
+            irc.send_message(now.strftime("%A, %d. %B %Y"), message.channel)
+        elif message.cmd[0] == 'datetime':
+            irc.send_message(now.strftime("%A, %d. %B %Y - %H:%M"), message.channel)

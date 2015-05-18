@@ -67,7 +67,6 @@ class VoteInstance():
     def vote(self, nick, option):
         # read arguments
         value = 1
-        print("'{0}' votes for '{1}'".format(nick, option))
         if option[0] == '-':
             option = option[1:].strip()
             value = -1
@@ -116,7 +115,7 @@ class VoteInstance():
 
     def print_ordered(self, votes):
         items = [item for item in votes.items()]
-        items.sort(key=lambda item: item[1])
+        items.sort(key=lambda x: x[1])
         items.reverse()
         for item in items:
             self._p(" -- -- {0}: {1}".format(item[1], item[0]))
@@ -171,8 +170,8 @@ class VoteInstance():
 
 
 class Voting(Plugin):
-    def __init__(self, ignored):
-        super().__init__()
+    def __init__(self, config):
+        super().__init__(config)
         self.help_commands = {
             'vote': 'OPTION - Vote for OPTION',
             'votestart': 'TITLE[,:MODES][,OPTION[,OPTION[,...]]] - Start a new voting.'
@@ -187,39 +186,34 @@ class Voting(Plugin):
         self.ezrael = ezrael
 
     def msg(self, nick, message):
-        self.ezrael.sendMessage2Nick(message, nick)
+        self.ezrael.send_message(message, nick)
 
-    def onMsg(self, irc, channel, nick, msg):
-        if len(msg) <= 1 or str(msg[0]) != '!':
-            return
-        cmd = msg[1:].split()[0].strip().lower()
-
-        # Make sure an actual command was sent.
-        if cmd not in self.help_commands:
+    def on_command(self, irc, message):
+        if message.cmd[0] not in self.help_commands:
             return
 
-        if cmd == 'vote':
-            option = msg[6:].strip()
-            if channel not in self.votings:
-                self.msg(nick, "No active voting (within channel {0}).".format(channel))
-            elif self.votings[channel].may_vote(nick, option):
-                self.votings[channel].vote(nick, option)
+        if message.cmd[0] == 'vote':
+            option = " ".join(message.cmd[1:])
+            if message.channel not in self.votings:
+                irc.send_message("No active voting (within message.channel {0}).".format(message.channel), message.nick)
+            elif self.votings[message.channel].may_vote(message.nick, option):
+                self.votings[message.channel].vote(message.nick, option)
             else:
-                self.msg(nick, "You're not supposed to vote for {0}.".format(option))
+                self.msg(message.nick, "You're not supposed to vote for {0}.".format(option))
         else:
-            if nick.lower() in self.ezrael.admins:
-                if cmd == 'votestart':
-                    if channel in self.votings:
-                        self.votings[channel].print()
-                    self.votings[channel] = VoteInstance(lambda x: irc.sendMessage2Channel(x, channel))
-                    self.votings[channel].init(msg[11:].strip().split(","))
+            if message.nick.lower() in self.ezrael.admins:
+                if message.cmd[0] == 'votestart':
+                    if message.channel in self.votings:
+                        self.votings[message.channel].print()
+                    self.votings[message.channel] = VoteInstance(lambda x: irc.send_message(x, message.channel))
+                    self.votings[message.channel].init(" ".join(message.cmd[1:]).strip().split(","))
                     return
-                elif cmd == 'voteend':
-                    if channel not in self.votings:
-                        self.msg(nick, "No active voting (within channel {0}).".format(channel))
+                elif message.cmd[0] == 'voteend':
+                    if message.channel not in self.votings:
+                        self.msg(message.nick, "No active voting (within message.channel {0}).".format(message.channel))
                     else:
-                        self.votings[channel].set_modes(msg[9:].strip())
-                        self.votings[channel].print()
-                        del self.votings[channel]
+                        self.votings[message.channel].set_modes("".join(message.cmd[1:]).strip())
+                        self.votings[message.channel].print()
+                        del self.votings[message.channel]
             else:
-                self.msg(nick, "Operation not permitted.")
+                self.msg(message.nick, "Operation not permitted.")

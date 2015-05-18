@@ -5,23 +5,29 @@ class Plugin(object):
     def init(self, irc):
         pass
 
-    def onPing(self, irc, msg):
+    def on_receive(self, irc, message):
         pass
 
-    def onKick(self, irc, channel, nick, msg):
+    def on_private_message(self, irc, message):
         pass
 
-    def onJoin(self, irc, channel, nick, msg):
+    def on_channel_message(self, irc, message):
         pass
 
-    def onRecv(self, irc, msg):
+    def on_message(self, irc, message):
         pass
 
-    def onMsg(self, irc, channel, nick, msg):
+    def on_command(self, irc, message):
         pass
 
-    def onPrivMsg(self, irc, nick, msg):
+    def on_kick(self, irc, message):
         pass
 
-    def onNotice(self, irc, channel, nick, msg):
+    def on_join(self, irc, message):
+        pass
+
+    def on_ping(self, irc, message):
+        pass
+
+    def on_notice(self, irc, message):
         pass

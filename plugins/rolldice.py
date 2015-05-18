@@ -2,58 +2,55 @@ from core.plugin import Plugin
 import random
 import re
 
+
 class RollDice(Plugin):
-  def onMsg(self, irc, channel, nick, msg):
-    # Extract the given command.
-    if str(msg[0]) == '!' and len(msg) > 1:
-      command = msg[1:].split()[0].strip().lower()
+    def on_command(self, irc, message):
+        if message.cmd[0] not in ['dice', 'rolldice', 'coin', 'flipcoin']:
+            return
 
-      # Make sure an actual command was sent.
-      if command not in ['dice', 'rolldice', 'coin', 'flipcoin']:
-        return
+        # Define default values.
+        eyes = 6
+        times = 1
 
-      # Define default values.
-      numEyes = 6
-      numRoles = 1
+        if message.cmd[0] in ['coin', 'flipcoin']:
+            eyes = 2
 
-      if command in ['coin', 'flipcoin']:
-        numEyes = 2
+            # Define the number pattern ...
+            pattern = re.compile(r"(?<![-.])\b[0-9]+\b(?!\.[0-9])")
 
-        # Define the number pattern ...
-        pattern = re.compile(r"(?<![-.])\b[0-9]+\b(?!\.[0-9])")
+            # ... and search for numbers in the command.
+            matches = pattern.findall(message)
 
-        # ... and search for numbers in the command.
-        matches = pattern.findall(msg)
-
-        if len(matches) > 0:
-          numRoles = max([2, int(matches[0])])
-      else:
-        # Define the number pattern ...
-        pattern = re.compile(r"(?<![-.])\b[0-9]+\b(?!\.[0-9])")
-
-        # ... and search for numbers in the command.
-        matches = pattern.findall(msg)
-
-        if len(matches) > 1:
-          numEyes = max([2, int(matches[0])])
-          numRoles = max([1, int(matches[1])])
-        elif len(matches) > 0:
-          numEyes = max([2, int(matches[0])])
-
-      if numEyes == 42:
-        irc.sendMessage2Channel("This is the Answer to The Ultimate Question of Life, the Universe, and Everything!", channel)
-      elif numEyes != 20 or numRoles > 1:
-        results = [];
-        for i in range(0, numRoles):
-          results.append(str(random.randint(1, numEyes)))
-
-        irc.sendMessage2Channel(", ".join(results), channel)
-      else:
-        result = random.randint(1, numEyes)
-
-        if result == 1:
-          irc.sendMessage2Channel("1 -> CRITICAL!", channel)
-        elif result == 20:
-          irc.sendMessage2Channel("20 -> FLOP! YOU GET BEATEN UP!", channel)
+            if len(matches) > 0:
+                times = max([2, int(matches[0])])
         else:
-          irc.sendMessage2Channel("{0}".format(result), channel)
+            # Define the number pattern ...
+            pattern = re.compile(r"(?<![-.])\b[0-9]+\b(?!\.[0-9])")
+
+            # ... and search for numbers in the command.
+            matches = pattern.findall(message)
+
+            if len(matches) > 1:
+                eyes = max([2, int(matches[0])])
+                times = max([1, int(matches[1])])
+            elif len(matches) > 0:
+                eyes = max([2, int(matches[0])])
+
+        if eyes == 42:
+            irc.send_message("This is the Answer to The Ultimate Question of Life, the Universe, and Everything!",
+                             message.channel)
+        elif eyes != 20 or times > 1:
+            results = []
+            for i in range(0, times):
+                results.append(str(random.randint(1, eyes)))
+
+            irc.send_message(", ".join(results), message.channel)
+        else:
+            result = random.randint(1, eyes)
+
+            if result == 1:
+                irc.send_message("1 -> CRITICAL!", message.channel)
+            elif result == 20:
+                irc.send_message("20 -> FLOP! YOU GET BEATEN UP!", message.channel)
+            else:
+                irc.send_message("{0}".format(result), message.channel)
