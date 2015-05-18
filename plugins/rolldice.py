@@ -19,7 +19,7 @@ class RollDice(Plugin):
             pattern = re.compile(r"(?<![-.])\b[0-9]+\b(?!\.[0-9])")
 
             # ... and search for numbers in the command.
-            matches = pattern.findall(message)
+            matches = pattern.findall(message.content)
 
             if len(matches) > 0:
                 times = max([2, int(matches[0])])
@@ -28,7 +28,7 @@ class RollDice(Plugin):
             pattern = re.compile(r"(?<![-.])\b[0-9]+\b(?!\.[0-9])")
 
             # ... and search for numbers in the command.
-            matches = pattern.findall(message)
+            matches = pattern.findall(message.content)
 
             if len(matches) > 1:
                 eyes = max([2, int(matches[0])])
