@@ -55,8 +55,8 @@ class Record(Plugin):
             return
 
         # only admins are allowed to define/change records
-        #if message.nick.lower() not in irc.admins:
-        #    return
+        if message.nick.lower() not in irc.admins:
+            return
 
         if len(message.cmd):
 
