@@ -9,7 +9,10 @@ VERSION = 0
 
 
 class Echo:
-    message = []
+    message = None
+
+    def __init__(self):
+        self.message = []
 
     def add_line(self, msg):
         self.message.append(msg)
@@ -38,7 +41,7 @@ class Record(Plugin):
 
     def attempt_save(self, echo, irc, channel, nick, name, overwrite):
         if not overwrite and name in self.registry:
-            irc.send_to_nick("Record already existing. Use !overwrite instead.", nick)
+            irc.send_message("Record already existing. Use !overwrite instead.", nick)
         else:
             self.registry[name] = echo.message
             del self.current[channel][nick]
@@ -52,8 +55,8 @@ class Record(Plugin):
             return
 
         # only admins are allowed to define/change records
-        if message.nick.lower() not in irc.admins:
-            return
+        #if message.nick.lower() not in irc.admins:
+        #    return
 
         if len(message.cmd):
 
@@ -82,16 +85,19 @@ class Record(Plugin):
         if len(message.cmd):
             if message.cmd[0] == 'stop':
                 del self.current[message.channel][message.nick]
-            elif message.cmd[0] == 'revert':
-                echo.revert(int(message.cmd[1]) or 1)
-            elif message.cmd[0] == 'save':
-                self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), False)
-            elif message.cmd[0] == 'overwrite':
-                self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), True)
-            elif message.cmd[0] == 'erase':
-                del self.registry[message.cmd[1].lower()]
             elif message.cmd[0] == 'ignore':
                 pass
+            elif len(message.cmd) > 1:
+                if message.cmd[0] == 'revert':
+                    echo.revert(int(message.cmd[1]) or 1)
+                elif message.cmd[0] == 'save':
+                    self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), False)
+                elif message.cmd[0] == 'overwrite':
+                    self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), True)
+                elif message.cmd[0] == 'erase':
+                    del self.registry[message.cmd[1].lower()]
+                else:
+                    echo.add_line(message.content)
             else:
                 echo.add_line(message.content)
         else:
