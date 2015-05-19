@@ -74,6 +74,9 @@ class Record(Plugin):
                     os.makedirs(os.path.dirname(self.registry_file))
                     with open(self.registry_file, 'w') as f:
                         json.dump(self.registry, f)
+                except PermissionError:
+                    print("NOTICE: No permission to persist records.")
+                    irc.send_message("Filesystem permission error while attempting to store records.", message.nick)
                 return
 
         # stop here if not recording
