@@ -79,6 +79,10 @@ class Record(Plugin):
                     irc.send_message("Filesystem permission error while attempting to store records.", message.nick)
                 return
 
+            if message.cmd[0] == 'erase' and len(message.cmd) > 1:
+                del self.registry[message.cmd[1].lower()]
+                return
+
         # stop here if not recording
         if message.channel not in self.current or message.nick not in self.current[message.channel]:
             return
@@ -97,8 +101,6 @@ class Record(Plugin):
                     self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), False)
                 elif message.cmd[0] == 'overwrite':
                     self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), True)
-                elif message.cmd[0] == 'erase':
-                    del self.registry[message.cmd[1].lower()]
                 else:
                     echo.add_line(message.content)
             else:
