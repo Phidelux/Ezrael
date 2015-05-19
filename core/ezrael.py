@@ -160,7 +160,7 @@ class Ezrael(object):
                     continue
                 # ... generate Message-object, ...
                 message = Message(self, m)
-                print("Received {0}".format(message))
+                print("Received %s" % message)
                 # ... run built-in commands and ...
                 if len(message.cmd):
                     self.check_commands(message)
