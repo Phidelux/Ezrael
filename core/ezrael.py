@@ -55,7 +55,7 @@ class Ezrael(object):
         self.ircChannel = '#' + self.config['main']['channel']
 
         # TODO: Remove usage of debugging nickname.
-        self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
+        # self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
 
         # Setup the socket used to communicate with the irc, ...
         self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -160,7 +160,7 @@ class Ezrael(object):
                     continue
                 # ... generate Message-object, ...
                 message = Message(self, m)
-                print("Received %s" % str(message).encode('latin-1'))
+                print("Received %s" % str(message).encode('utf-8'))
                 # ... run built-in commands and ...
                 if len(message.cmd):
                     self.check_commands(message)
