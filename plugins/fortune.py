@@ -1,5 +1,5 @@
 from core.plugin import Plugin
-import urllib.request
+import urllib.request, urllib.error
 
 
 class Fortune(Plugin):
@@ -34,7 +34,7 @@ class Fortune(Plugin):
 
             # ... and send it as message to the irc channel.
             irc.send_message('[Fortune] ' + fortune, message.channel)
-        except urllib.error.HTTPError, e:
+        except urllib.error.HTTPError as e:
             irc.send_message('[Fortune] Service currently unavailable', message.channel)
         except Exception:
             pass
