@@ -32,3 +32,6 @@ The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.
 - Calculator (!calc <expression>)
 - Sudoku Generator (!sudoku)
 - Last seen (!lastseen <username>)
+- List of upcoming films in Cinemaxx (!kino <city>)
+- List of meals in the local mensa (!mensa <city> <mensa> <day>)
+- King of the Week (!fastfood)
