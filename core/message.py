@@ -17,7 +17,7 @@ class Message:
         self.irc = irc
         # get prefix (hostname, etc.)
         prefix_end = 0
-        if message[0] == ":":
+        if len(message) > 0 and message[0] == ":":
             prefix_end = message.find(" ")
             self.prefix = message[1:prefix_end]
             prefix_end += 1
@@ -29,7 +29,8 @@ class Message:
         else:
             self.command = message[prefix_end:].split(" ")
         # get channel and/or nick
-        if len(self.command) > 1 and self.command[1][0] == "#":
+        if len(self.command) > 1 and len(self.command[1]) > 0 
+                and self.command[1][0] == "#":
             self.channel = self.command[1]
         nick_end = self.prefix.find("!")
         if ~nick_end:
