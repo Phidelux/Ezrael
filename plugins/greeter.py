@@ -34,7 +34,3 @@ class Greeter(Plugin):
                     self.greeted[message.channel].append(message.nick)
 
                 irc.send_message("{0}, {1}".format(greeting, message.nick), message.channel)
-
-    def on_join(self, irc, message):
-        if message.nick != irc.ircNick:
-            irc.send_notice("Welcome to {0}.".format(message.channel), message.nick)
