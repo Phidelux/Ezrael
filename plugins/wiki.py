@@ -16,12 +16,12 @@ class Wiki(Plugin):
         query = str(msg[5:])
 
         # ... and fetch the content object.
-        wikiJson = self.fetchWiki(query)
+        wikiJson = self.fetch_wiki(query)
         wikiSoup = BeautifulSoup(str(wikiJson))
 
-        redirect = self.checkRedirect(wikiSoup)
+        redirect = self.check_redirect(wikiSoup)
         if (redirect != None):
-            wikiJson = self.fetchWiki(redirect)
+            wikiJson = self.fetch_wiki(redirect)
 
         # Extract the content block ...
         content = wikiJson['parse']['text']['*']
@@ -55,7 +55,7 @@ class Wiki(Plugin):
         # ... and send it as message to the irc channel.
         self.send_message('[Wikipedia] ' + beautyWiki, channel)
 
-    def checkRedirect(self, content):
+    def check_redirect(self, content):
         # Check if the given content contains a redirect.
         redirect = content.select('div.redirectMsg > ul > li > a')
         if len(redirect) > 0:
@@ -67,7 +67,7 @@ class Wiki(Plugin):
 
         return None
 
-    def prepareUrl(self, query):
+    def prepare_url(self, query):
         # Define the query parameters, ...
         params = {"action": "parse", "prop": "text", "format": "json", "page": "{0}".format(urllib.parse.quote(query))}
 
@@ -77,9 +77,9 @@ class Wiki(Plugin):
         # ... and setup the request url.
         return "http://en.wikipedia.org/w/api.php?{0}".format(queryStr)
 
-    def fetchWiki(self, query):
+    def fetch_wiki(self, query):
         # Setup the request url ...
-        wikiApi = self.prepareUrl(query)
+        wikiApi = self.prepare_url(query)
 
         # ... and fetch the english wikipedia from http://en.wikipedia.org/w/api.php.
         return requests.get(wikiApi).json()
