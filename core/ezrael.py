@@ -6,7 +6,8 @@ from core.msghandler import MessageHandler
 import configparser
 import socket
 import random
-import thread
+import _thread
+import time
 import ssl
 import os
 
@@ -14,6 +15,13 @@ COMMAND_PREFIX = "!"
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
 class Ezrael(MessageHandler):
+    @staticmethod
+    def map_strip(elements, to_lower=False):
+        elements = map(lambda s: s.strip(), elements)
+        if to_lower:
+            elements = map(lambda s: s.lower(), elements)
+        return elements
+        
     @staticmethod
     def norm_channel(channel):
         if channel[0] == "#":
@@ -119,7 +127,7 @@ class Ezrael(MessageHandler):
                     print('NOTICE: Loaded plugin ' + module)
                     instance = getattr(plugin, module)(self.config)
                     self.plugins.append(instance)
-                    thread.start_new_thread(self.pluginHandling, (instance, ))
+                    _thread.start_new_thread(self.pluginHandling, (instance, ))
 
             self.notify_plugins('init')
             self.pluginsLoaded = True

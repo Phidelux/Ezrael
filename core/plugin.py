@@ -1,6 +1,6 @@
 from core.msghandler import MessageHandler
-from Queue import *
-import thread
+from queue import *
+import _thread
 import time
 
 class Plugin(MessageHandler):
@@ -8,7 +8,7 @@ class Plugin(MessageHandler):
         self.config = config
         self.queue_in = Queue()
         self.queue_out = Queue()
-        thread.start_new_thread(self.run,())
+        _thread.start_new_thread(self.run,())
         self.resttime = 0
         self.lastcmd = 0
 
@@ -19,13 +19,13 @@ class Plugin(MessageHandler):
             try:
                 getattr(self, event)(message) 
             except IndexError:
-                print "IndexError"
+                print("IndexError")
                 pass
             except ValueError:
-                print "ValueError"
+                print("ValueError")
                 pass
 
-    def queue(self, message):
+    def queue(self, event, message):
         self.queue_in.put((event, message))
 
     def send(self, data):

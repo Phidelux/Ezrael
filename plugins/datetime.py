@@ -1,7 +1,6 @@
 from core.plugin import Plugin
 import datetime
 
-
 class Datetime(Plugin):
     def on_command(self, message):
         if message.cmd[0] not in ['time', 'date', 'datetime']:
