@@ -31,10 +31,10 @@ class RollDice(Plugin):
             matches = pattern.findall(message.content)
 
             if len(matches) > 1:
-                eyes = max([2, int(matches[0])])
-                times = max([1, int(matches[1])])
+                eyes = max([2, min([1000000, int(matches[0])])])
+                times = max([1, min([10, int(matches[1])])])
             elif len(matches) > 0:
-                eyes = max([2, int(matches[0])])
+                eyes = max([2, min([1000000, int(matches[0])])])
 
         if eyes == 42:
             irc.send_message("This is the Answer to The Ultimate Question of Life, the Universe, and Everything!",
