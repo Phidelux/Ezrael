@@ -6,7 +6,7 @@ import datetime
 import json
 
 class Mensa(Plugin):
-    def on_command(self, irc, message):
+    def on_command(self, message):
         if message.cmd[0] != 'mensa':
             return
 

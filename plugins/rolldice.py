@@ -4,7 +4,7 @@ import re
 
 
 class RollDice(Plugin):
-    def on_command(self, irc, message):
+    def on_command(self, message):
         if message.cmd[0] not in ['dice', 'rolldice', 'coin', 'flipcoin']:
             return
 

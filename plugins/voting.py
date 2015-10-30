@@ -182,13 +182,10 @@ class Voting(Plugin):
         self.ezrael = None
         self.votings = {}
 
-    def init(self, ezrael):
-        self.ezrael = ezrael
-
     def msg(self, nick, message):
-        self.ezrael.send_message(message, nick)
+        self.send_message(message, nick)
 
-    def on_command(self, irc, message):
+    def on_command(self, message):
         if message.cmd[0] not in self.help_commands:
             return
 

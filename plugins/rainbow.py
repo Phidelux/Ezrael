@@ -1,9 +1,8 @@
 from core.plugin import Plugin
 from core.colors import Color
 
-
 class Rainbow(Plugin):
-    def on_command(self, irc, message):
+    def on_command(self, message):
         # Extract the current command and message ...
         command = message.cmd[0]
         msg = message.content[irc.command_prefix_len + len(command):].strip()

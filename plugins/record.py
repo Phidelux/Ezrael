@@ -1,5 +1,7 @@
 __author__ = 'frissdiegurke'
 
+# TODO: Use the new messaging interface.
+
 import os
 import json
 
@@ -26,7 +28,7 @@ class Record(Plugin):
     current = {}
     registry_file = ""
 
-    def init(self, irc):
+    def init(self, message):
         self.registry_file = os.path.join(irc.base_path, "plugins/data/record-registry.json")
         try:
             with open(self.registry_file, 'r') as f:
@@ -38,14 +40,14 @@ class Record(Plugin):
         except FileNotFoundError:
             pass
 
-    def attempt_save(self, echo, irc, channel, nick, name, overwrite):
+    def attempt_save(self, echo, channel, nick, name, overwrite):
         if not overwrite and name in self.registry:
             self.send_message("Record already existing. Use !overwrite instead.", nick)
         else:
             self.registry[name] = echo.message
             del self.current[channel][nick]
 
-    def on_message(self, irc, message):
+    def on_message(self, message):
         name = message.content[1:].lower()
 
         if len(message.content) and message.content[0] == "$" and name in self.registry:
@@ -97,9 +99,9 @@ class Record(Plugin):
                 if message.cmd[0] == 'revert':
                     echo.revert(int(message.cmd[1]) or 1)
                 elif message.cmd[0] == 'save':
-                    self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), False)
+                    self.attempt_save(echo, message.channel, message.nick, message.cmd[1].lower(), False)
                 elif message.cmd[0] == 'overwrite':
-                    self.attempt_save(echo, irc, message.channel, message.nick, message.cmd[1].lower(), True)
+                    self.attempt_save(echo, message.channel, message.nick, message.cmd[1].lower(), True)
                 else:
                     echo.add_line(message.content)
             else:

@@ -17,7 +17,7 @@ class Greeter(Plugin):
     # Define the greetiungs pattern.
     pattern = re.compile('(?xi)^([h]([e3a4]([y]|[l1]{2}[o0])|[i])|[m][o0][i][n]|[o0][l1]{1,2}[a4])$')
 
-    def on_message(self, irc, message):
+    def on_message(self, message):
         if self.pattern.match(message.content):
 
             if message.channel not in self.greeted:

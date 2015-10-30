@@ -3,7 +3,7 @@ import datetime
 
 
 class Datetime(Plugin):
-    def on_command(self, irc, message):
+    def on_command(self, message):
         if message.cmd[0] not in ['time', 'date', 'datetime']:
             return
 
