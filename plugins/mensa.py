@@ -54,8 +54,8 @@ class Mensa(Plugin):
 
             # Finally send all messages to the irc channel.
             for entry in theMenu:
-                irc.send_message(entry, message.channel)
+                self.send_message(entry, message.channel)
         except urllib.error.HTTPError as e:
-            irc.send_message('[Mensa] Service currently unavailable', message.channel)
+            self.send_message('[Mensa] Service currently unavailable', message.channel)
         except Exception:
             traceback.print_exc()

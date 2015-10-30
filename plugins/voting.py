@@ -195,7 +195,7 @@ class Voting(Plugin):
         if message.cmd[0] == 'vote':
             option = " ".join(message.cmd[1:])
             if message.channel not in self.votings:
-                irc.send_message("No active voting (within message.channel {0}).".format(message.channel), message.nick)
+                self.send_message("No active voting (within message.channel {0}).".format(message.channel), message.nick)
             elif self.votings[message.channel].may_vote(message.nick, option):
                 self.votings[message.channel].vote(message.nick, option)
             else:
@@ -205,7 +205,7 @@ class Voting(Plugin):
                 if message.cmd[0] == 'votestart':
                     if message.channel in self.votings:
                         self.votings[message.channel].print()
-                    self.votings[message.channel] = VoteInstance(lambda x: irc.send_message(x, message.channel))
+                    self.votings[message.channel] = VoteInstance(lambda x: self.send_message(x, message.channel))
                     self.votings[message.channel].init(" ".join(message.cmd[1:]).strip().split(","))
                     return
                 elif message.cmd[0] == 'voteend':

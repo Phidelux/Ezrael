@@ -37,20 +37,20 @@ class RollDice(Plugin):
                 eyes = max([2, min([1000000, int(matches[0])])])
 
         if eyes == 42:
-            irc.send_message("This is the Answer to The Ultimate Question of Life, the Universe, and Everything!",
+            self.send_message("This is the Answer to The Ultimate Question of Life, the Universe, and Everything!",
                              message.channel)
         elif eyes != 20 or times > 1:
             results = []
             for i in range(0, times):
                 results.append(str(random.randint(1, eyes)))
 
-            irc.send_message(", ".join(results), message.channel)
+            self.send_message(", ".join(results), message.channel)
         else:
             result = random.randint(1, eyes)
 
             if result == 1:
-                irc.send_message("1 -> CRITICAL!", message.channel)
+                self.send_message("1 -> CRITICAL!", message.channel)
             elif result == 20:
-                irc.send_message("20 -> FLOP! YOU GET BEATEN UP!", message.channel)
+                self.send_message("20 -> FLOP! YOU GET BEATEN UP!", message.channel)
             else:
-                irc.send_message("{0}".format(result), message.channel)
+                self.send_message("{0}".format(result), message.channel)

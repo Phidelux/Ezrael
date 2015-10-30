@@ -7,4 +7,4 @@ from core.plugin import Plugin
 class Pong(Plugin):
     def on_ping(self, irc, message):
         print("NOTICE: PONG {0}".format(message.content))
-        irc.send("PONG {0}\r\n".format(message.content).encode())
+        self.send("PONG {0}\r\n".format(message.content).encode())

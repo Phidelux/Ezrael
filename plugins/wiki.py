@@ -53,7 +53,7 @@ class Wiki(Plugin):
             .replace('\t', ' ')
 
         # ... and send it as message to the irc channel.
-        irc.send_message('[Wikipedia] ' + beautyWiki, channel)
+        self.send_message('[Wikipedia] ' + beautyWiki, channel)
 
     def checkRedirect(self, content):
         # Check if the given content contains a redirect.

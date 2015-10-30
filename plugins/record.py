@@ -21,7 +21,6 @@ class Echo:
         for i in range(1, amount):
             self.message.pop()
 
-
 class Record(Plugin):
     registry = {"__v": VERSION}
     current = {}
@@ -41,7 +40,7 @@ class Record(Plugin):
 
     def attempt_save(self, echo, irc, channel, nick, name, overwrite):
         if not overwrite and name in self.registry:
-            irc.send_message("Record already existing. Use !overwrite instead.", nick)
+            self.send_message("Record already existing. Use !overwrite instead.", nick)
         else:
             self.registry[name] = echo.message
             del self.current[channel][nick]
@@ -51,7 +50,7 @@ class Record(Plugin):
 
         if len(message.content) and message.content[0] == "$" and name in self.registry:
             for l in self.registry[name]:
-                irc.send_message(l, message.channel)
+                self.send_message(l, message.channel)
             return
 
         # only admins are allowed to define/change records
@@ -76,7 +75,7 @@ class Record(Plugin):
                         json.dump(self.registry, f)
                 except PermissionError:
                     print("NOTICE: No permission to persist records.")
-                    irc.send_message("Filesystem permission error while attempting to store records.", message.nick)
+                    self.send_message("Filesystem permission error while attempting to store records.", message.nick)
                 return
 
             if message.cmd[0] == 'erase' and len(message.cmd) > 1:

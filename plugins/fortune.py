@@ -1,9 +1,8 @@
 from core.plugin import Plugin
 import urllib.request, urllib.error
 
-
 class Fortune(Plugin):
-    def on_command(self, irc, message):
+    def on_command(self, message):
         if message.cmd[0] != 'fortune':
             return
 
@@ -33,8 +32,8 @@ class Fortune(Plugin):
                 fortune = fortune.replace(k, v)
 
             # ... and send it as message to the irc channel.
-            irc.send_message('[Fortune] ' + fortune, message.channel)
+            self.send_message('[Fortune] ' + fortune, message.channel)
         except urllib.error.HTTPError as e:
-            irc.send_message('[Fortune] Service currently unavailable', message.channel)
+            self.send_message('[Fortune] Service currently unavailable', message.channel)
         except Exception:
             pass

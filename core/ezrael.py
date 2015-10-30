@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import socket
 import configparser
+import socket
 import random
-import os
+import thread
 import ssl
+import os
 from core.message import Message
 
 COMMAND_PREFIX = "!"
@@ -55,7 +56,8 @@ class Ezrael(object):
         self.ircChannel = '#' + self.config['main']['channel']
 
         # TODO: Remove usage of debugging nickname.
-        # self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
+        self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
+        self.ircChannel = "#ezraeltest"
 
         # Setup the socket used to communicate with the irc, ...
         self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

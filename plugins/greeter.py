@@ -33,4 +33,4 @@ class Greeter(Plugin):
                     # remember he got greeted, don't do this for masters
                     self.greeted[message.channel].append(message.nick)
 
-                irc.send_message("{0}, {1}".format(greeting, message.nick), message.channel)
+                self.send_message("{0}, {1}".format(greeting, message.nick), message.channel)
