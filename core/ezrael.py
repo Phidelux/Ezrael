@@ -1,25 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from core.message import Message
+from core.msghandler import MessageHandler
+
 import configparser
 import socket
 import random
 import thread
 import ssl
 import os
-from core.message import Message
 
 COMMAND_PREFIX = "!"
 
-
 # Defining a class to run the server. One per connection. This class will do most of our work.
-class Ezrael(object):
-    @staticmethod
-    def map_strip(elements, to_lower=False):
-        elements = map(lambda s: s.strip(), elements)
-        if to_lower:
-            elements = map(lambda s: s.lower(), elements)
-        return elements
-
+class Ezrael(MessageHandler):
     @staticmethod
     def norm_channel(channel):
         if channel[0] == "#":
@@ -202,22 +196,3 @@ class Ezrael(object):
 
     def send(self, data):
         self.ircSock.send(data)
-
-    def send_message(self, data, receiver):
-        self.ircSock.send(("PRIVMSG %s :%s\r\n" % (receiver, data)).encode())
-
-    def send_notice(self, data, receiver):
-        self.ircSock.send(("NOTICE %s :%s\r\n" % (receiver, data)).encode())
-
-    def join_channel(self, channel):
-        channel = self.norm_channel(channel)
-        self.ircSock.send("JOIN {0} \r\n".format(channel).encode())
-        self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(channel).encode())
-        print("NOTICE: Trying to obtain operator status with Chanserv on %s" % channel)
-        # This needs to test if the channel is full
-        # This needs to modify the list of active channels
-
-    def quit_channel(self, channel):
-        channel = self.norm_channel(channel)
-        self.ircSock.send("PART {0} \r\n".format(channel).encode())
-        # This needs to modify the list of active channels

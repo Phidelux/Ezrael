@@ -1,8 +1,9 @@
+from core.msghandler import MessageHandler
 from Queue import *
 import thread
 import time
 
-class Plugin(object):
+class Plugin(MessageHandler):
     def __init__(self, config=None):
         self.config = config
         self.queue_in = Queue()
@@ -29,9 +30,6 @@ class Plugin(object):
 
     def send(self, data):
         self.queue_out.put(data)
-
-    def send_message(self, data, receiver):
-        self.queue_out.put(("PRIVMSG %s :%s\r\n" % (receiver, data)).encode())
 
     def init(self, message):
         pass
