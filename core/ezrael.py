@@ -91,19 +91,19 @@ class Ezrael(MessageHandler):
             exit(1)  # TODO: We should make it reconnect if it gets an error here
         print("NOTICE: Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
 
-        self.ircSock.send("NICK {0} \r\n".format(self.ircNick).encode())
+        self.send("NICK {0} \r\n".format(self.ircNick).encode())
         print("NOTICE: Setting bot nick to " + str(self.ircNick))
 
-        self.ircSock.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
+        self.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
         print("NOTICE: Setting User")
 
-        self.ircSock.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
+        self.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
         print("******* Nickserv Identify")
 
-        self.ircSock.send("JOIN {0} \r\n".format(self.ircChannel).encode())
+        self.send("JOIN {0} \r\n".format(self.ircChannel).encode())
         print("NOTICE: Joining channel " + str(self.ircChannel))
 
-        self.ircSock.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
+        self.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
         print("NOTICE: Trying to obtain operator status ...")
 
         self.isConnected = True
@@ -119,6 +119,7 @@ class Ezrael(MessageHandler):
                     print('NOTICE: Loaded plugin ' + module)
                     instance = getattr(plugin, module)(self.config)
                     self.plugins.append(instance)
+                    thread.start_new_thread(self.pluginHandling, (instance, ))
 
             self.notify_plugins('init')
             self.pluginsLoaded = True
@@ -126,12 +127,12 @@ class Ezrael(MessageHandler):
     def fetch_admins(self):
         return self.admins
 
-    def notify_plugins(self, event, *args):
+    def notify_plugins(self, event, message = None):
         if not self.pluginsLoaded and event != 'init':
             return
 
         for plugin in self.plugins:
-            getattr(plugin, event)(self, *args)
+            plugin.queue(event, message)
 
     def trigger(self, event, message):
         if message.propagate:
@@ -166,6 +167,24 @@ class Ezrael(MessageHandler):
 
         if self.shouldReconnect:
             self.connect()
+
+    def pluginHandling(self, plugin):
+        sent = 0
+        lastsent = time.time()
+
+        while True:
+            send = plugin.queue_out.get()
+
+            if time.time() - lastsent > 10:
+                sent = 0
+
+            print("SENDING: \n => '%s'".format(send))
+            self.send(send)
+            lastsent = time.time()
+            sent += 1
+
+            if sent >= 5:
+                time.sleep(1)
 
     def check_commands(self, message):
         if message.nick.lower() in self.admins:
