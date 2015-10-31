@@ -58,8 +58,8 @@ class Ezrael(MessageHandler):
         self.ircChannel = '#' + self.config['main']['channel']
 
         # TODO: Remove usage of debugging nickname.
-        self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
-        self.ircChannel = "#ezraeltest"
+        # self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
+        # self.ircChannel = "#ezraeltest"
 
         # Setup the socket used to communicate with the irc, ...
         self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
