@@ -28,7 +28,7 @@ class Record(Plugin):
     current = {}
     registry_file = ""
 
-    def init(self, message):
+    def init(self):
         self.registry_file = os.path.join(self.context['base_path'], "plugins/data/record-registry.json")
         try:
             with open(self.registry_file, 'r') as f:
