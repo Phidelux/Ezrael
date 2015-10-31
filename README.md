@@ -32,7 +32,6 @@ The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.
 
 ## Plugin Ideas
 
-- Change the channel topic (!topic)
 - Calculator (!calc <expression>)
 - Sudoku Generator (!sudoku)
 - Last seen (!lastseen <username>)
