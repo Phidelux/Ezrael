@@ -64,7 +64,7 @@ class Ezrael(MessageHandler):
         # Setup the socket used to communicate with the irc, ...
         self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # ... initialize some class attributes ...
+        # ... initialize some class attributes, ...
         self.isConnected = False
         self.pluginsLoaded = False
         self.shouldReconnect = False
@@ -74,6 +74,17 @@ class Ezrael(MessageHandler):
         self.admins = []
         if self.config['main']['plugins'] is not None:
             self.admins.extend(self.map_strip(self.config['main']['admins'].split(','), True))
+        
+        # ... build an application context for the plugins ...
+        self.context = {
+            'host': self.ircHost,
+            'port': self.ircPort,
+            'nick': self.ircNick,
+            'admins': self.admins,
+            'base_path': self.base_path,
+            'command_prefix': self.command_prefix,
+            'command_prefix_len': self.command_prefix_len
+        }
 
         # ... and finally load all plugins enabled in the configuration.
         self.load_plugins()
@@ -125,22 +136,19 @@ class Ezrael(MessageHandler):
                 if module:
                     plugin = __import__('plugins.' + module.lower(), globals(), locals(), [module])
                     print('NOTICE: Loaded plugin ' + module)
-                    instance = getattr(plugin, module)(self.config)
+                    instance = getattr(plugin, module)(self.context)
                     self.plugins.append(instance)
                     _thread.start_new_thread(self.pluginHandling, (instance, ))
 
             self.notify_plugins('init')
             self.pluginsLoaded = True
 
-    def fetch_admins(self):
-        return self.admins
-
-    def notify_plugins(self, event, message = None):
+    def notify_plugins(self, event, *args, **kwargs):
         if not self.pluginsLoaded and event != 'init':
             return
 
         for plugin in self.plugins:
-            plugin.queue(event, message)
+            plugin.queue(event, *args, **kwargs)
 
     def trigger(self, event, message):
         if message.propagate:
@@ -186,7 +194,7 @@ class Ezrael(MessageHandler):
             if time.time() - lastsent > 10:
                 sent = 0
 
-            print("SENDING: \n => '%s'".format(send))
+            print("SENDING: \n => '{}'".format(send))
             self.send(send)
             lastsent = time.time()
             sent += 1

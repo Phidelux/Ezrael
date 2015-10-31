@@ -27,13 +27,10 @@ class Greeter(Plugin):
 
                 greeting = Greeter.greetings[random.randint(0, len(Greeter.greetings) - 1)]
 
-                # TODO: Fix to greet admins.
-                #if message.nick.strip().lower() in irc.fetch_admins():
-                #    message.nick = "Master"
-                #else:
+                if message.nick.strip().lower() in self.context['admins']:
+                    message.nick = "Master"
+                else:
                     # remember he got greeted, don't do this for masters
-                #    self.greeted[message.channel].append(message.nick)
+                    self.greeted[message.channel].append(message.nick)
                 
-                self.greeted[message.channel].append(message.nick)
-
                 self.send_message("{0}, {1}".format(greeting, message.nick), message.channel)

@@ -5,7 +5,7 @@ class Rainbow(Plugin):
     def on_command(self, message):
         # Extract the current command and message ...
         command = message.cmd[0]
-        msg = message.content[irc.command_prefix_len + len(command):].strip()
+        msg = message.content[self.context['command_prefix_len'] + len(command):].strip()
 
         # ... and print the colorized version.
         if command == "black":

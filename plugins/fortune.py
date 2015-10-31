@@ -8,6 +8,8 @@ class Fortune(Plugin):
 
         try:
             # Setup the request url, ...
+            url = 'https://api.theysaidso.com/quote.json'
+                  + '?maxlength=300'
             url = 'http://www.iheartquotes.com/api/v1/random' \
                   + '?show_permalink=false' \
                   + '&max_characters=200' \

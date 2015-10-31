@@ -29,7 +29,7 @@ class Record(Plugin):
     registry_file = ""
 
     def init(self, message):
-        self.registry_file = os.path.join(irc.base_path, "plugins/data/record-registry.json")
+        self.registry_file = os.path.join(self.context['base_path'], "plugins/data/record-registry.json")
         try:
             with open(self.registry_file, 'r') as f:
                 reg = json.load(f)
@@ -56,7 +56,7 @@ class Record(Plugin):
             return
 
         # only admins are allowed to define/change records
-        if message.nick.lower() not in irc.admins:
+        if message.nick.lower() not in self.context['admins']:
             return
 
         if len(message.cmd):

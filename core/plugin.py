@@ -4,8 +4,8 @@ import _thread
 import time
 
 class Plugin(MessageHandler):
-    def __init__(self, config=None):
-        self.config = config
+    def __init__(self, context=None):
+        self.context = context
         self.queue_in = Queue()
         self.queue_out = Queue()
         _thread.start_new_thread(self.run,())
@@ -14,10 +14,10 @@ class Plugin(MessageHandler):
 
     def run(self):
         while True:
-            event, message = self.queue_in.get()
+            event, args, kwargs = self.queue_in.get()
 
             try:
-                getattr(self, event)(message) 
+                getattr(self, event)(*args, **kwargs) 
             except IndexError:
                 print("IndexError")
                 pass
@@ -25,13 +25,13 @@ class Plugin(MessageHandler):
                 print("ValueError")
                 pass
 
-    def queue(self, event, message):
-        self.queue_in.put((event, message))
+    def queue(self, event, *args, **kwargs):
+        self.queue_in.put((event, args, kwargs))
 
     def send(self, data):
         self.queue_out.put(data)
 
-    def init(self, message):
+    def init(self):
         pass
 
     def on_receive(self, message):

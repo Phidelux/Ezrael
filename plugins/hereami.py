@@ -13,5 +13,5 @@ class HereAmI(Plugin):
             self.send_message(hereMsg, message.channel)
 
     def on_join(self, message):
-        if message.nick == irc.ircNick:
+        if message.nick == self.context['nick']:
             self.send_message('Here am I!', message.channel)
