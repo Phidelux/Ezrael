@@ -53,7 +53,7 @@ class Mensa(Plugin):
                     for meal in meals:
                         theMenu.append("{0} - {1}€/{2}€/{3}€".format(meal['name'], meal['prices']['students'], meal['prices']['employees'], meal['prices']['others'] ))
                 except urllib.error.HTTPError as e:
-                    print('No data for {}'.format(canteen['name']))
+                    print('No data for {}'.format(canteen['name'].encode()))
             # Finally send all messages to the irc channel.
             for entry in theMenu:
                 self.send_message(entry, message.channel)
