@@ -3,6 +3,8 @@ Ezrael
 
 Ezrael is a simple IRC bot written in Python
 
+[![Codeship Status for Bornageek/Ezrael](https://codeship.io/projects/6dce54f0-624f-0133-e0c3-32b67f1e3a7d/status)](https://codeship.io/projects/112619)
+
 ## Installation
 
 To install Ezrael you should first download the sources from GitHub:
@@ -35,6 +37,8 @@ The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.
 - Calculator (!calc <expression>)
 - Sudoku Generator (!sudoku)
 - Last seen (!lastseen <username>)
+- Messages since last visit (!missed)
+- User statistics, like most posts, most online time, etc. (!stats)
 - List of upcoming films in Cinemaxx (!kino <city>)
 - List of meals in the local mensa (!mensa <city> <mensa> <day>)
 - King of the Week (!fastfood)
