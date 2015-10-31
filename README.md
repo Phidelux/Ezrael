@@ -26,6 +26,9 @@ The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.
 - [ ] Channel db (Allow different channels with different coinfigurations)
 - [ ] Reply to admin commands just via /msg and via /notice 
 - [ ] Implement !help and !command commands
+- [ ] Extend mensa plugin to accept gps coordinates and radius
+- [ ] Implement extra thread for listening
+- [ ] Allow setting of context variables in config
 
 ## Plugin Ideas
 
