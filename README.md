@@ -31,6 +31,8 @@ The Ezrael IRC bot is licensed under the terms of the Apache License 2.0.
 - [ ] Extend mensa plugin to accept gps coordinates and radius
 - [ ] Implement extra thread for listening
 - [ ] Allow setting of context variables in config
+- [ ] Reimplement message class
+- [ ] Implement automatoic config reading for plugins
 
 ## Plugin Ideas
 
