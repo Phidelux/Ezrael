@@ -1,0 +1,9 @@
+beautifulsoup4==4.4.1
+docutils==0.12
+html5lib==0.9999999
+Jinja2==2.8
+lxml==3.4.4
+requests==2.8.1
+uritools==1.0.1
+urllib3==1.12
+virtualenv==13.1.2
