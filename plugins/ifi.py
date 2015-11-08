@@ -3,6 +3,7 @@ from core.colors import Color
 from bs4 import BeautifulSoup
 import urllib.request, urllib.error
 import datetime
+import time
 
 class Ifi(Plugin):
     def init(self):
@@ -30,10 +31,11 @@ class Ifi(Plugin):
                 htmlBlob = urllib.request.urlopen(ifiUrl).read()
 
                 # Initialize BeautifulSoup, ...
-                soup = BeautifulSoup(resultBlob, "html5lib")
+                soup = BeautifulSoup(htmlBlob, "html5lib")
 
                 # ... find the container of the lecture list ...
                 container = soup.find(id="id_content")
+                print(container.get_text())
 
                 # ... and extract the list.
                 lectureList = container.find("table").tbody.find_all("tr")
@@ -41,7 +43,7 @@ class Ifi(Plugin):
                 # Loop over all lectures.
                 for lecture in lectureList:
                     # Fetch all cells ...
-                    cells = lecture.find_all("<td>")
+                    cells = lecture.find_all("td")
 
                     # ... and check if there are running lectures.
                     if len(cells) == 1:
@@ -55,4 +57,4 @@ class Ifi(Plugin):
                     # ... and send it.
                     self.send_message(lectureDesc, message.channel)
             except urllib.error.HTTPError as e:
-                self.send_message('[Mensa] Service currently unavailable', message.channel)
+                self.send_message('[IFI] Service currently unavailable', message.channel)
