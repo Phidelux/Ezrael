@@ -34,7 +34,7 @@ class Ezrael(MessageHandler):
     # The default constructor - declaring global variables
     # channel should be rewritten to be a list, which then loops to connect, per channel.
     # This needs to support an alternate nick.
-    def __init__(self):
+    def __init__(self, debugging):
         # Fetch the current working directory ...
         base_path = os.path.dirname(os.path.realpath(__file__))
         base_path = base_path[:base_path.rfind('/')]
@@ -58,8 +58,9 @@ class Ezrael(MessageHandler):
         self.ircChannel = '#' + self.config['main']['channel']
 
         # TODO: Remove usage of debugging nickname.
-        # self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
-        # self.ircChannel = "#ezraeltest"
+        if debugging ==  True:
+            self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
+            self.ircChannel = "#ezraeltest"
 
         # Setup the socket used to communicate with the irc, ...
         self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
