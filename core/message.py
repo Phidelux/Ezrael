@@ -59,6 +59,8 @@ class Message:
             events.append('on_ping')
         elif self.command[0] == "NOTICE":
             events.append('on_notice')
+        elif self.command[0] in ["QUIT", "PART"]:
+            events.append('on_quit')
         return events
 
     def __str__(self):

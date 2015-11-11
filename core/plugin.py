@@ -60,3 +60,6 @@ class Plugin(MessageHandler):
 
     def on_notice(self, message):
         pass
+
+    def on_quit(self, message):
+        pass
