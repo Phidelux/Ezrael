@@ -6,15 +6,22 @@ class LastSeen(Plugin):
         # Initialize the list of users.
         self.last_seen = {}
 
-    def update_lastseen(self, username):
+    def update_lastseen(self, nick, channel):
         now = datetime.datetime.now()
-        self.last_seen[username] = now.strftime("%A, %d. %B %Y - %H:%M")
+
+        if nick not in self.last_seen.keys():
+            self.last_seen[nick] = {}
+
+        self.last_seen[nick][channel] = now.strftime("%A, %d. %B %Y - %H:%M")
 
     def on_join(self, message):
-        self.update_lastseen(message.nick)
+        self.update_lastseen(message.nick, message.channel)
+
+    def on_quit(self, message):
+        self.update_lastseen(message.nick, message.channel)
 
     def on_message(self, message):
-        self.update_lastseen(message.nick)
+        self.update_lastseen(message.nick, message.channel)
         
     def on_command(self, message):
         # Check if topic change request was sent.
@@ -24,16 +31,16 @@ class LastSeen(Plugin):
         # Split the message in command and username ...
         words = message.content.split()
 
-        # ...and extract the username from the command.
-        username = words[1].strip() if len(words) >= 2 else None
+        # ...and extract the nickname from the command.
+        nickname = words[1].strip() if len(words) >= 2 else None
 
-        if username == self.context['nick']:
+        if nickname == self.context['nick']:
             self.send_message("I am currently running, dumbass!", message.channel)
-        elif username in self.last_seen.keys():
+        elif nickname in self.last_seen.keys() and message.channel in self.last_seen[nickname].keys():
             self.send_message(
                   "Last time I saw {0} was {1}.".format(
-                        username, self.last_seen[username]), 
+                        nickname, self.last_seen[nickname][message.channel]), 
                   message.channel)
         else:
-            self.send_message("Did not see {0} for a long time.".format(username),
+            self.send_message("Didn't see {0} for a long time.".format(nickname),
                   message.channel)
