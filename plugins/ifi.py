@@ -35,24 +35,26 @@ class Ifi(Plugin):
 
                 # ... find the container of the lecture list ...
                 container = soup.find(id="id_content")
-                print(container.get_text())
 
                 # ... and extract the list.
-                lectureList = container.find("table").tbody.find_all("tr")
+                lectureList = container.find("table").tbody.findAll("tr")
 
                 # Loop over all lectures.
                 for lecture in lectureList:
                     # Fetch all cells ...
-                    cells = lecture.find_all("td")
+                    cells = lecture.findAll("td")
+                    cells = [ele.text.strip().split('\n', 1)[0].strip()
+                                for ele in cells]
 
                     # ... and check if there are running lectures.
                     if len(cells) == 1:
-                        self.send_message(cells[0].get_text(), message.channel)
-                        break
+                        self.send_message("{0}{1}{2}".format(
+                              Color.bold, cells[0], Color.clear), message.channel)
+                        continue
 
                     # Setup the message ...
-                    lectureDesc = "{0} {1}{2}{3} | {4}".format(
-                          cells[0], Color.bold, cells[1], Color.clear, cells[3])
+                    lectureDesc = "{0} {1} | {2}".format(
+                                    cells[0], cells[1], cells[3])
 
                     # ... and send it.
                     self.send_message(lectureDesc, message.channel)
