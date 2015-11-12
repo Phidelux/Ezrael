@@ -62,6 +62,12 @@ class Ezrael(MessageHandler):
             self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
             self.ircChannel = "#ezraeltest"
 
+        # Set the correct timezone.
+        if self.config['main']['timezone'] is not None:
+            self.timezone = self.config['main']['timezone'].strip()
+            os.environ['TZ'] = self.timezone
+            time.tzset()
+
         # Setup the socket used to communicate with the irc, ...
         self.ircSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -82,6 +88,7 @@ class Ezrael(MessageHandler):
             'port': self.ircPort,
             'nick': self.ircNick,
             'admins': self.admins,
+            'timezone': self.timezone,
             'base_path': self.base_path,
             'command_prefix': self.command_prefix,
             'command_prefix_len': self.command_prefix_len
