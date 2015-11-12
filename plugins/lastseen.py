@@ -1,5 +1,5 @@
 from core.plugin import Plugin
-import datetime
+import time
 
 class LastSeen(Plugin):
     def init(self):
@@ -7,12 +7,10 @@ class LastSeen(Plugin):
         self.last_seen = {}
 
     def update_lastseen(self, nick, channel):
-        now = datetime.datetime.now()
-
         if nick not in self.last_seen.keys():
             self.last_seen[nick] = {}
 
-        self.last_seen[nick][channel] = now.strftime("%A, %d. %B %Y - %H:%M")
+        self.last_seen[nick][channel] = time.strftime("%a, %d. %b %Y - %H:%M")
 
     def on_join(self, message):
         self.update_lastseen(message.nick, message.channel)
