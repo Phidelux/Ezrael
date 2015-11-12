@@ -2,7 +2,6 @@ from core.plugin import Plugin
 from core.colors import Color
 from bs4 import BeautifulSoup
 import urllib.request, urllib.error
-import datetime
 import time
 
 class Ifi(Plugin):

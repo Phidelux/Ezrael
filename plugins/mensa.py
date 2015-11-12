@@ -2,7 +2,7 @@ from core.plugin import Plugin
 from core.colors import Color
 import urllib.request, urllib.error
 import traceback
-import datetime
+import time
 import json
 
 class Mensa(Plugin):
@@ -11,11 +11,8 @@ class Mensa(Plugin):
             return
 
         try:
-            # Fetch the current date ...
-            now = datetime.datetime.now()
-
-            # ... and store the current date as string.
-            today = now.strftime('%Y-%m-%d')
+            # Store the current date as string.
+            today = time.strftime('%Y-%m-%d')
 
             # Setup an array to hold all messages.
             theMenu = []
