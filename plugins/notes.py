@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from core.plugin import Plugin
 from collections import namedtuple
 import time
@@ -43,14 +45,17 @@ class Notes(Plugin):
 
             # Fetch the given nickname, ...
             nickname = words[1].strip()
+            print(nickname)
+
+            if nickname.lower() == 'me':
+                nickname = message.nick
 
             # ... extract the message, ...
             msgText = ' '.join(words[2:])
+            print(msgText.encode('utf-8'))
 
             # ... fetch the current timestamp ...
             timestamp = time.strftime("%d. %b %Y, %H:%M")
-
-            print("{0}: {1} -> {2} | {3}".format(timestamp, message.nick, nickname, msgText))
 
             # ... and save the new note.
             self.save(nickname, Note(timestamp, message.nick, msgText))
