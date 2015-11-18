@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from core.msghandler import MessageHandler
 from queue import *
 import _thread

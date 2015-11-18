@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from core.message import Message
 from core.msghandler import MessageHandler
+from core.utils import decode
 
 import configparser
 import socket
@@ -12,6 +13,17 @@ import ssl
 import os
 
 COMMAND_PREFIX = "!"
+
+def decode(bytes):
+    try: 
+        text = bytes.decode('utf-8')
+    except UnicodeDecodeError: 
+        try: 
+            text = bytes.decode('iso-8859-1')
+        except UnicodeDecodeError: 
+            text = bytes.decode('cp1252')
+    
+    return text
 
 # Defining a class to run the server. One per connection. This class will do most of our work.
 class Ezrael(MessageHandler):
@@ -164,11 +176,11 @@ class Ezrael(MessageHandler):
 
     def listen(self):
         while self.isConnected:
-            bunch = self.ircSock.recv(1024)
+            bunch = self.ircSock.recv(4096)
             if not bunch:
                 continue
             try:
-                msg = bunch.decode()
+                msg = decode(bunch)
                 msgs = msg.split("\r\n")
             except UnicodeDecodeError:
                 msg = str(bunch)
@@ -181,7 +193,7 @@ class Ezrael(MessageHandler):
                     continue
                 # ... generate Message-object, ...
                 message = Message(self, m)
-                print("Received %s" % str(message).encode('utf-8'))
+                print("Received %s" % str(message))
                 # ... run built-in commands and ...
                 if len(message.cmd):
                     self.check_commands(message)
