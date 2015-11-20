@@ -36,18 +36,26 @@ def main(argv):
         else:
             assert False, "unhandled option"
 
-    # Initialize the irc bot, ...
-    ezrael = Ezrael(debugging)
+    try:
+        # Initialize the irc bot, ...
+        ezrael = Ezrael(debugging)
 
-    # ... bind the connect method of ezrael to a thread ...
-    ezrael_thread = threading.Thread(None, ezrael.connect)
+        # ... bind the connect method of ezrael to a thread, ...
+        ezrael_thread = threading.Thread(None, ezrael.connect)
 
-    # ... and start the IRC bot.
-    ezrael_thread.start()
+        # ... make this thread a daemon thread ...
+        ezrael_thread.setDaemon(True)
 
-    # Enter a loop if you should try to reconnect.
-    while ezrael.shouldReconnect:
-        time.sleep(5)
+        # ... and start the IRC bot.
+        ezrael_thread.start()
+
+        # Enter a loop if you should try to reconnect.
+        while ezrael.shouldReconnect:
+            time.sleep(5)
+    except:
+        pass
+    finally:
+        print('Goodbye!')
 
 if __name__ == "__main__":
     main(sys.argv[1:])
