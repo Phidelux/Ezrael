@@ -48,7 +48,7 @@ class Ezrael(MessageHandler):
     # channel should be rewritten to be a list, which then loops to connect, per channel.
     # This needs to support an alternate nick.
     def __init__(self, debugging):
-        # Fetch the logger.
+        # Fetch an instance of the logger.
         if debugging:
             self.logger = logging.getLogger('development')
         else:
@@ -76,7 +76,6 @@ class Ezrael(MessageHandler):
         self.ircPassword = self.config['main']['password']
         self.ircChannel = '#' + self.config['main']['channel']
 
-        # TODO: Remove usage of debugging nickname.
         if debugging ==  True:
             self.ircNick = "Ezrael{:0>2}".format(random.randint(1, 99))
             self.ircChannel = "#ezraeltest"
@@ -109,6 +108,7 @@ class Ezrael(MessageHandler):
             'admins': self.admins,
             'timezone': self.timezone,
             'base_path': self.base_path,
+            'debugging': debugging,
             'command_prefix': self.command_prefix,
             'command_prefix_len': self.command_prefix_len
         }

@@ -2,11 +2,18 @@
 # -*- coding: utf-8 -*-
 from core.msghandler import MessageHandler
 from queue import *
+import logging
 import _thread
 import time
 
 class Plugin(MessageHandler):
     def __init__(self, context=None):
+        # Fetch an instance of the logger.
+        if context is not None and context['debugging']:
+            self.logger = logging.getLogger('development')
+        else:
+            self.logger = logging.getLogger('production')
+
         self.context = context
         self.queue_in = Queue()
         self.queue_out = Queue()
