@@ -58,4 +58,5 @@ class Ifi(Plugin):
                     # ... and send it.
                     self.send_message(lectureDesc, message.channel)
             except urllib.error.HTTPError as e:
+                self.logger.warning('Ifi Service currently unavailable')
                 self.send_message('[IFI] Service currently unavailable', message.channel)

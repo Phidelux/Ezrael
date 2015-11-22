@@ -6,5 +6,5 @@ from core.plugin import Plugin
 
 class Pong(Plugin):
     def on_ping(self, message):
-        print("NOTICE: PONG {0}".format(message.content))
+        self.logger.info("PONG {0}".format(message.content))
         self.send("PONG {0}\r\n".format(message.content).encode())

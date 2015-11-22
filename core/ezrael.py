@@ -225,7 +225,7 @@ class Ezrael(MessageHandler):
             if time.time() - lastsent > 10:
                 sent = 0
 
-            self.logger.info("-> '{}'".format(send))
+            self.logger.info("-> '{}'".format(decode(send)))
             self.send(send)
             lastsent = time.time()
             sent += 1

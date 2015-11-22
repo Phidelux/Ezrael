@@ -50,11 +50,12 @@ class Mensa(Plugin):
                     for meal in meals:
                         theMenu.append("{0} - {1}€/{2}€/{3}€".format(meal['name'], meal['prices']['students'], meal['prices']['employees'], meal['prices']['others'] ))
                 except urllib.error.HTTPError as e:
-                    print('No data for {}'.format(canteen['name'].encode()))
+                    self.logger.info('No data for {}'.format(canteen['name'].encode()))
             # Finally send all messages to the irc channel.
             for entry in theMenu:
                 self.send_message(entry, message.channel)
         except urllib.error.HTTPError as e:
+            self.logger.info('Mensa service currently unavailable')
             self.send_message('[Mensa] Service currently unavailable', message.channel)
         except Exception:
             traceback.print_exc()

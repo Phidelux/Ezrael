@@ -36,6 +36,7 @@ class Fortune(Plugin):
             # ... and send it as message to the irc channel.
             self.send_message('[Fortune] ' + fortune, message.channel)
         except urllib.error.HTTPError as e:
+            self.logger.warning('Fortune service currently unavailble')
             self.send_message('[Fortune] Service currently unavailable', message.channel)
         except Exception:
             pass
