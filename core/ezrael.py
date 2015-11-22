@@ -92,7 +92,8 @@ class Ezrael(MessageHandler):
         # ... initialize some class attributes, ...
         self.isConnected = False
         self.pluginsLoaded = False
-        self.shouldReconnect = False
+        self.shouldReconnect = self.config['main']['reconnect'].lower() in ['true', '1', 't']
+        self.reconnectDelay = int(self.config['main']['reconnect_delay'])
         self.command = ''
         self.plugins = []
 
@@ -120,7 +121,6 @@ class Ezrael(MessageHandler):
     # It should be rewritten to allow multiple channels in a single server.
     # This needs to have an "auto identify" as part of its script, or support a custom connect message.
     def connect(self):
-        self.shouldReconnect = True
         # noinspection PyBroadException
         try:
             self.ircSock.connect((self.ircHost, self.ircPort))
@@ -132,30 +132,33 @@ class Ezrael(MessageHandler):
                                                # file with root certificates
                                                ca_certs=os.path.join(self.base_path, "ca-certs.txt")
                                                )
+
+            self.logger.info("Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
+
+            self.send("NICK {0} \r\n".format(self.ircNick).encode())
+            self.logger.info("Setting bot nick to " + str(self.ircNick))
+
+            self.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
+            self.logger.info("Setting User")
+
+            self.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
+            self.logger.info("******* Nickserv Identify")
+
+            self.send("JOIN {0} \r\n".format(self.ircChannel).encode())
+            self.logger.info("Joining channel " + str(self.ircChannel))
+
+            self.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
+            self.logger.info("Trying to obtain operator status ...")
+
+            self.isConnected = True
+            self.listen()
         except:
             self.logger.error("Could not connect to Host " + str(self.ircHost) + ":" + str(self.ircPort))
-            exit(1)  # TODO: We should make it reconnect if it gets an error here
+            
+            if self.shouldReconnect:
+                time.sleep(self.reconnectDelay)
+                self.connect()
         
-        self.logger.info("Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
-
-        self.send("NICK {0} \r\n".format(self.ircNick).encode())
-        self.logger.info("Setting bot nick to " + str(self.ircNick))
-
-        self.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
-        self.logger.info("Setting User")
-
-        self.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
-        self.logger.info("******* Nickserv Identify")
-
-        self.send("JOIN {0} \r\n".format(self.ircChannel).encode())
-        self.logger.info("Joining channel " + str(self.ircChannel))
-
-        self.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
-        self.logger.info("Trying to obtain operator status ...")
-
-        self.isConnected = True
-        self.listen()
-
     def load_plugins(self):
         if self.config['main']['plugins'] is not None:
             plugins = self.map_strip(self.config['main']['plugins'].split(','))
