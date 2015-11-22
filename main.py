@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
-import getopt
-import threading
-import time
-
 from core.ezrael import Ezrael
+
+import threading
+import logging
+import logging.config
+import getopt
+import time
+import sys
 
 def usage():
     print('Usage: python ezrael.py [-h]\n\n'
@@ -36,6 +38,15 @@ def main(argv):
         else:
             assert False, "unhandled option"
 
+    # Inititalize the logging api ...
+    logging.config.fileConfig('config/logging.conf')
+
+    # ... and fetch a logger.
+    if debugging:
+        logger = logging.getLogger('development')
+    else:
+        logger = logging.getLogger('production')
+
     try:
         # Initialize the irc bot, ...
         ezrael = Ezrael(debugging)
@@ -52,10 +63,8 @@ def main(argv):
         # Enter a loop if you should try to reconnect.
         while ezrael.shouldReconnect:
             time.sleep(5)
-    except:
-        pass
     finally:
-        print('Goodbye!')
+        logger.info('Ezrael stopped ...')
 
 if __name__ == "__main__":
     main(sys.argv[1:])

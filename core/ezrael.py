@@ -5,6 +5,7 @@ from core.msghandler import MessageHandler
 from core.utils import decode
 
 import configparser
+import logging
 import socket
 import random
 import _thread
@@ -47,6 +48,12 @@ class Ezrael(MessageHandler):
     # channel should be rewritten to be a list, which then loops to connect, per channel.
     # This needs to support an alternate nick.
     def __init__(self, debugging):
+        # Fetch the logger.
+        if debugging:
+            self.logger = logging.getLogger('development')
+        else:
+            self.logger = logging.getLogger('production')
+
         # Fetch the current working directory ...
         base_path = os.path.dirname(os.path.realpath(__file__))
         base_path = base_path[:base_path.rfind('/')]
@@ -126,24 +133,25 @@ class Ezrael(MessageHandler):
                                                ca_certs=os.path.join(self.base_path, "ca-certs.txt")
                                                )
         except:
-            print("Error: Could not connect to Host " + str(self.ircHost) + ":" + str(self.ircPort))
+            self.logger.error("Could not connect to Host " + str(self.ircHost) + ":" + str(self.ircPort))
             exit(1)  # TODO: We should make it reconnect if it gets an error here
-        print("NOTICE: Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
+        
+        self.logger.info("Connected to: " + str(self.ircHost) + ":" + str(self.ircPort))
 
         self.send("NICK {0} \r\n".format(self.ircNick).encode())
-        print("NOTICE: Setting bot nick to " + str(self.ircNick))
+        self.logger.info("Setting bot nick to " + str(self.ircNick))
 
         self.send("USER {0} 8 * :X\r\n".format(self.ircNick).encode())
-        print("NOTICE: Setting User")
+        self.logger.info("Setting User")
 
         self.send("PRIVMSG nickserv :identify {0} {1}\r\n".format(self.ircNick, self.ircPassword).encode())
-        print("******* Nickserv Identify")
+        self.logger.info("******* Nickserv Identify")
 
         self.send("JOIN {0} \r\n".format(self.ircChannel).encode())
-        print("NOTICE: Joining channel " + str(self.ircChannel))
+        self.logger.info("Joining channel " + str(self.ircChannel))
 
         self.send("PRIVMSG chanserv :op {0} \r\n".format(self.ircChannel).encode())
-        print("NOTICE: Trying to obtain operator status ...")
+        self.logger.info("Trying to obtain operator status ...")
 
         self.isConnected = True
         self.listen()
@@ -155,7 +163,7 @@ class Ezrael(MessageHandler):
             for module in plugins:
                 if module:
                     plugin = __import__('plugins.' + module.lower(), globals(), locals(), [module])
-                    print('NOTICE: Loaded plugin ' + module)
+                    self.logger.info('Loaded plugin ' + module)
                     instance = getattr(plugin, module)(self.context)
                     self.plugins.append(instance)
                     _thread.start_new_thread(self.pluginHandling, (instance, ))
@@ -193,7 +201,7 @@ class Ezrael(MessageHandler):
                     continue
                 # ... generate Message-object, ...
                 message = Message(self, m)
-                print("Received %s" % str(message))
+                self.logger.info("Received %s" % str(message))
                 # ... run built-in commands and ...
                 if len(message.cmd):
                     self.check_commands(message)
@@ -214,7 +222,7 @@ class Ezrael(MessageHandler):
             if time.time() - lastsent > 10:
                 sent = 0
 
-            print("SENDING: \n => '{}'".format(send))
+            self.logger.info("-> '{}'".format(send))
             self.send(send)
             lastsent = time.time()
             sent += 1
@@ -225,7 +233,7 @@ class Ezrael(MessageHandler):
     def check_commands(self, message):
         if message.nick.lower() in self.admins:
             # admin commands
-            print("Command by {0}: {1}".format(message.nick, " ".join(message.cmd)))
+            self.logger.info("Command by {0}: {1}".format(message.nick, " ".join(message.cmd)))
             if message.cmd[0] == 'quit':
                 self.ircSock.send("QUIT {0} \r\n".format(self.ircChannel).encode())
                 self.ircSock.close()
