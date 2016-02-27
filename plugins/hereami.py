@@ -14,4 +14,5 @@ class HereAmI(Plugin):
 
     def on_join(self, message):
         if message.nick == self.context['nick']:
-            self.send_message('Here am I!', message.channel)
+            pass
+            #self.send_message('Here am I!', message.channel)
