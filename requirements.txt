@@ -1,6 +1,6 @@
 beautifulsoup4==4.4.1
 docutils==0.12
-html5lib==0.9999999
+html5lib==0.99999999
 Jinja2==2.11.3
 lxml==4.6.5
 requests==2.20.0
